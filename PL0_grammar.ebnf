@@ -5,15 +5,15 @@ func ::= 'fun' name '(' argList ')' var* 'begin' statement* 'end'
 statement ::= 'while' relation 'do' statement
     | 'if' relation 'then' statement
     | 'if' relation 'then' statement 'else' statement
-    | name ':=' expr
-    | 'print' '(' literal ')'
-    | 'write' '(' expr ')'
-    | 'read' '(' name ')'
+    | name ':=' expr ';'?
+    | 'print' '(' literal ')' ';'?
+    | 'write' '(' expr ')' ';'?
+    | 'read' '(' name ')' ';'?
     | 'return' expr
-    | name '(' exprList ')'
+    | name '(' exprList ')' ';'?
     | 'skip'
     | 'break'
-    | 'begin' statements 'end'
+    | 'begin' statements 'end' ';'
     
 relation ::= expr '<' expr
     | expr '<=' expr
