@@ -1,0 +1,66 @@
+program ::= func* funcMain EOF
+
+func ::= 'fun' name '(' argList ')' var* 'begin' statement* 'end' 
+
+statement ::= 'while' relation 'do' statement
+    | 'if' relation 'then' statement
+    | 'if' relation 'then' statement 'else' statement
+    | name ':=' expr
+    | 'print' '(' literal ')'
+    | 'write' '(' expr ')'
+    | 'read' '(' name ')'
+    | 'return' expr
+    | name '(' exprList ')'
+    | 'skip'
+    | 'break'
+    | 'begin' statements 'end'
+    
+relation ::= expr '<' expr
+    | expr '<=' expr
+    | expr '>' expr
+    | expr '>=' expr
+    | expr '==' expr
+    | expr '!=' expr
+    | relation 'and' relation
+    | relation 'or' relation
+    | 'not' relation
+    | '(' relation ')'
+    
+exprList ::= expr (',' exprList)? e
+
+expr ::= expr '+' expr
+    | expr '-' expr
+    | expr '*' expr
+    | expr '/' expr
+    | '-' expr
+    | '+' expr
+    | '(' expr ')'
+    | name '(' exprList ')'
+    | name
+    | name '[' expr ']'
+    | number
+    | int '(' expr ')'
+    | float '(' expr ')'
+
+argList ::= arg (',' argList)?
+
+arg ::= name ':' int
+    | name ':' float
+    | name ':' int '[' int ']'
+    | name ':' flaot '[' int ']'
+
+var ::= name ':' int ';'
+    | name ':' float ';'
+    | name ':' int '[' int ']' ';'
+    | name ':' float '[' int ']' ';'
+
+literal ::= "sentence"
+
+number ::= int
+    | float
+
+int ::= [0-9]*
+
+flaot ::= [0-9]* '.' [0-9]*
+
+name ::= [a-z]
