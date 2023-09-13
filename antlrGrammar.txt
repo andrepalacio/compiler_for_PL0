@@ -1,0 +1,125 @@
+program : func* funcMain EOF
+    ;
+
+func : 'fun' NAME '(' argList ')' var* 'begin' statementList 'end'
+    ;
+    
+funcMain : 'fun' 'main' '(' ')' var* 'begin' statementList 'end'
+    ;
+    
+statementList : statement (';' statementList)?
+    ;
+
+statement : 'while' relation 'do' statement
+    | 'if' relation 'then' statement
+    | 'if' relation 'then' statement 'else' statement
+    | NAME ':=' expr
+    | 'print' '(' '"' LITERAL '"' ')'
+    | 'write' '(' expr ')'
+    | 'read' '(' NAME ')'
+    | 'return' expr
+    | NAME '(' exprList ')'
+    | 'skip'
+    | 'break'
+    | 'begin' statementList 'end'
+    ;
+    
+relation : expr '<' expr
+    | expr '<=' expr
+    | expr '>' expr
+    | expr '>=' expr
+    | expr '==' expr
+    | expr '!=' expr
+    | relation 'and' relation
+    | relation 'or' relation
+    | 'not' relation
+    | '(' relation ')'
+    ;
+    
+exprList : expr (',' exprList)?
+    ;
+
+expr : expr '+' expr
+    | expr '-' expr
+    | expr '*' expr
+    | expr '/' expr
+    | '-' expr
+    | '+' expr
+    | '(' expr ')'
+    | NAME '(' exprList ')'
+    | NAME
+    | NAME '[' expr ']'
+    | number
+    | 'int' '(' expr ')'
+    | 'float' '(' expr ')'
+    ;
+
+argList : arg (',' argList)?
+    ;
+
+arg : NAME ':' 'int'
+    | NAME ':' 'float'
+    | NAME ':' 'int' '[' INT ']'
+    | NAME ':' 'float' '[' INT ']'
+    ;
+
+var : NAME ':' 'int' ';'
+    | NAME ':' 'float' ';'
+    | NAME ':' 'int' '[' INT ']' ';'
+    | NAME ':' 'float' '[' INT ']' ';'
+    ;
+
+number : INT
+    | FLOAT
+    ;
+
+/* LEXER */
+AND : 'and' ;
+OR : 'or' ;
+NOT : 'not' ;
+COMMA : ',' ;
+SEMI : ';' ;
+QUOTE : '"';
+LPAREN : '(' ;
+RPAREN : ')' ;
+LSQUAR : '[';
+RSQUAR : ']';
+LCURLY : '{' ;
+RCURLY : '}' ;
+FUN : 'fun';
+BEGIN : 'begin';
+END : 'end';
+MAIN : 'main';
+WHILE : 'while';
+DO : 'do';
+IF : 'if';
+THEN : 'then';
+ELSE : 'else';
+ASSIGN : ':=';
+PRINT : 'print';
+WRITE : 'write';
+READ : 'read';
+RETURN : 'return';
+SKIP1 : 'skip';
+BREAK : 'break';
+LT : '<';
+LE : '<=';
+GT : '>';
+GE : '>=';
+EQ : '==';
+NE : '!=';
+MINUS : '-';
+PLUS : '+';
+TIMES : '*';
+DIVIDE : '/';
+DECL : ':';
+TINT : 'int';
+TFLOAT : 'float';
+
+
+
+INT : [0-9]+ ;
+FLOAT : [0-9]+.[0-9]+;
+NAME: [a-zA-Z_][a-zA-Z_0-9]* ;
+WS: [ \t\n\r\f]+ -> skip ;
+LITERAL : [a-zA-Z_0-9]+;
