@@ -8,7 +8,7 @@ class LexerForPL0(Lexer):
   tokens = [
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, VARDECL, ASSIGN, PRINT, 
     READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT,
-    LTE, GTE, SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, NUMBER, INT, ID, LITERAL
+    LTE, GTE, SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING
   ]
 
   #literals
@@ -20,36 +20,48 @@ class LexerForPL0(Lexer):
   # ignore comments
   ignore_comment = r'/\*.*\*/'
 
+  # float number
+  @_(r'((([1-9]\d*)|0)(\.\d+(e[+-]?\d+)?))|((([1-9]\d*)|0)e[+-]?\d+)')
+  def FLOAT(self, t):
+    if '.' in t.value:
+      if 'e' not in t.value:
+        t.value = float(t.value)
+    return t
+  
   # integer
-  @_(r'\d+')
+  @_(r'(([1-9]\d+)|0)(?![\de-])')
   def INT(self, t):
     t.value = int(t.value)
     return t
 
-  # float or int number
-  @_(r'-?(\d+|\d+.\d+)')
-  def NUMBER(self, t):
-    if '.' in t.value:
-      t.value = float(t.value)
-    else:
-      t.value = int(t.value)
-    return t
+  # string
+  STRING = r'"(?:[^"\\]|\\["n\\])*"'
+
+  # identifier
+  ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
   #tokens declaration
-  FUN = r'fun'
-  BEGIN = r'begin'
-  END = r'end'
-  IF = r'if'
-  THEN = r'then'
-  ELSE = r'else'
-  WHILE = r'while'
-  DO = r'do'
-  ASSIGN = r':='
-  VARDECL = r':'
-  PRINT = r'print'
-  READ = r'read'
-  WRITE = r'write'
-  RETURN = r'return'
+  ID['fun'] = FUN
+  ID['begin'] = BEGIN
+  ID['end'] = END
+  ID['if'] = IF
+  ID['then'] = THEN
+  ID['else'] = ELSE
+  ID['while'] = WHILE
+  ID['do'] = DO
+  ID[':='] = ASSIGN
+  ID[':'] = VARDECL
+  ID['print'] = PRINT
+  ID['read'] = READ
+  ID['write'] = WRITE
+  ID['return'] = RETURN
+  ID['skip'] = SKIP
+  ID['break'] = BREAK
+  ID['and'] = AND
+  ID['or'] = OR
+  ID['not'] = NOT
+  ID['int'] = TINT
+  ID['float'] = TFLOAT
   PLUS = r'\+'
   MINUS = r'-'
   TIMES = r'\*'
@@ -60,19 +72,6 @@ class LexerForPL0(Lexer):
   GT = r'>'
   LTE = r'<='
   GTE = r'>='
-  SKIP = r'skip'
-  BREAK = r'break'
-  AND = r'and'
-  OR = r'or'
-  NOT = r'not'
-  TINT = r'int'
-  TFLOAT = r'float'
-  
-  # string literal
-  LITERAL = r'"(?:[^"\\]|\\["n\\])*"'
-
-  # identifier
-  ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
   # count newlines
   @_(r'\n+')
@@ -82,12 +81,14 @@ class LexerForPL0(Lexer):
   # uncompleted comment
   @_(r'/\*.*')
   def ignore_uncompleted_comment(self, t):
-    print(f'Uncompleted comment at line {self.lineno}')
+    print(f'Uncompleted comment at line {t.lineno}')
     self.index += 1
 
   # error handling
+  @_(r'.+')
   def error(self, t):
-    print(f'Illegal character {t.value[0]} at line {self.lineno}')
+    print(f'Illegal character {t.value} at line {t.lineno}')
+    self.lineno += 1
     self.index += 1
 
 def print_lexer(source):
