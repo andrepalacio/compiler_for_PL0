@@ -47,7 +47,7 @@ NUMBER = r'\d+|\d+.\d+'
 ID::= r'[a-zA-Z_][a-zA-Z_0-9]*'
 ignore::= [ \t\n\r]+
 LITERAL : r'"(?:[^"\\]|\\["\\n])*"'
-COMMENTARY : r'/\*(?:[^"\\]|\\["\\n])*\*/'
+COMMENTARY : r'/\*.\*/'
 
 
 /* GRAMÁTICA */
