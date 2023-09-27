@@ -14,6 +14,27 @@ class LexerForPL0(Lexer):
   #literals
   literals = { '(', ')', '{', '}', ';', ',', '[', ']'}
 
+  # ignore spaces and tabs
+  ignore = ' \t\r'
+
+  # ignore comments
+  ignore_comment = r'/\*.*\*/'
+
+  # integer
+  @_(r'\d+')
+  def INT(self, t):
+    t.value = int(t.value)
+    return t
+
+  # float or int number
+  @_(r'-?(\d+|\d+.\d+)')
+  def NUMBER(self, t):
+    if '.' in t.value:
+      t.value = float(t.value)
+    else:
+      t.value = int(t.value)
+    return t
+
   #tokens declaration
   FUN = r'fun'
   BEGIN = r'begin'
@@ -46,33 +67,12 @@ class LexerForPL0(Lexer):
   NOT = r'not'
   TINT = r'int'
   TFLOAT = r'float'
-
-  # integer
-  @_(r'\d+')
-  def INT(self, t):
-    t.value = int(t.value)
-    return t
-
-  # float or int number
-  @_(r'\d+|\d+.\d+')
-  def NUMBER(self, t):
-    if '.' in t.value:
-      t.value = float(t.value)
-    else:
-      t.value = int(t.value)
-    return t
   
   # string literal
   LITERAL = r'"(?:[^"\\]|\\["n\\])*"'
 
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-    # ignore spaces and tabs
-  ignore = ' \t\r'
-
-  # ignore comments
-  ignore_comment = r'/\*.*\*/'
 
   # count newlines
   @_(r'\n+')
@@ -87,7 +87,7 @@ class LexerForPL0(Lexer):
 
   # error handling
   def error(self, t):
-    print(f'Illegal character {t.value[0]}')
+    print(f'Illegal character {t.value[0]} at line {self.lineno}')
     self.index += 1
 
 def print_lexer(source):
@@ -106,6 +106,7 @@ def print_lexer(source):
   
 
 if __name__ == '__main__':
-  with open('test.pl0') as f:
+  filePath = './test1/badnumbers.pl0'
+  with open(filePath) as f:
     text = f.read()
   print_lexer(text)
