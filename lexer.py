@@ -9,34 +9,32 @@ class LexerForPL0(Lexer):
   tokens = {
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, VARDECL, ASSIGN, PRINT, 
     READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT,
-    LTE, GTE, SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING
+    LTE, GTE, SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING,
+    LPAREN, RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT
   }
-
-  #literals
-  literals = { '(', ')', '{', '}', ';', ',', '[', ']', '+', '-', '*', '/'}
 
   # ignore spaces and tabs
   ignore = ' \t\r'
 
   # ignore comments
-  ignore_comment = r'/\*.*\*/'
+  COMMENT = r'(/\*.+\*/)|(/\*([\s\S]*?)\*/)'
+
+  # integer
+  @_(r'(([1-9]\d*)|0)(?![\.\de-])')
+  def INT(self, t):
+    t.value = int(t.value)
+    return t
 
   # float number
-  @_(r'((([1-9]\d*)|0)(\.\d+(e[+-]?\d+)?))|((([1-9]\d*)|0)e[+-]?\d+)')
+  @_(r'(0|[1-9]\d*)(\.\d+)?(\d[e][+-]?\d+)?(?![\.\de-])')
   def FLOAT(self, t):
     if '.' in t.value:
       if 'e' not in t.value:
         t.value = float(t.value)
     return t
-  
-  # integer
-  @_(r'(([1-9]\d*)|0)(?![\de-])')
-  def INT(self, t):
-    t.value = int(t.value)
-    return t
 
   # string
-  STRING = r'"(?:[^"\\]|\\["n\\])*"'
+  STRING = r'"(?:[^"]|\\["n\\])*"'
 
   #tokens declaration
   FUN = r'fun\b'
@@ -66,6 +64,18 @@ class LexerForPL0(Lexer):
   GT = r'>'
   LTE = r'<='
   GTE = r'>='
+  PLUS = r'\+'
+  MINUS = r'-'
+  TIMES = r'\*'
+  DIVIDE = r'/'
+  LPAREN = r'\('
+  RPAREN = r'\)'
+  LBRACE = r'\{'
+  RBRACE = r'\}'
+  SEMICOLON = r';'
+  COMMA = r','
+  LBRACKET = r'\['
+  RBRACKET = r'\]'
 
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -82,9 +92,11 @@ class LexerForPL0(Lexer):
     self.index += 1
 
   # error handling
+  @_(r'.+')
   def error(self, t):
-    print(f'Illegal character {str(t.value[0])} at line {t.lineno}')
+    print(f'Illegal character {t.value[0:5]} ... at line {t.lineno}')
     self.index += 1
+    self.lineno += 1
 
 def print_lexer(source):
   #print tokens using rich library
