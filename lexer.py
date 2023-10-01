@@ -10,14 +10,13 @@ class LexerForPL0(Lexer):
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, VARDECL, ASSIGN, PRINT, 
     READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE,
     SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, 
-    RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT, UCOMMENT
+    RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT
   }
 
   # ignore spaces and tabs
   ignore = ' \t\r'
 
   # ignore comments
-  #COMMENT = r'(/\*.+\*/)|(/\*([\s\S]*?)\*/)'
   COMMENT = r'/\*[\s\S]*?\*/'
 
   # uncompleted comment
