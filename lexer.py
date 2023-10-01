@@ -8,25 +8,32 @@ class LexerForPL0(Lexer):
   # tokens
   tokens = {
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, VARDECL, ASSIGN, PRINT, 
-    READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT,
-    LTE, GTE, SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING,
-    LPAREN, RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT
+    READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE,
+    SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, 
+    RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT, UCOMMENT
   }
 
   # ignore spaces and tabs
   ignore = ' \t\r'
 
   # ignore comments
-  COMMENT = r'(/\*.+\*/)|(/\*([\s\S]*?)\*/)'
+  #COMMENT = r'(/\*.+\*/)|(/\*([\s\S]*?)\*/)'
+  COMMENT = r'/\*[\s\S]*?\*/'
+
+  # uncompleted comment
+  @_(r'/\*.*[\s\S]*(?!\*/)')
+  def uncompleted_comment(self, t):
+    print(f'Uncompleted comment {t.value[0:5]} at line {t.lineno}')
+    self.index += 1
 
   # integer
-  @_(r'(([1-9]\d*)|0)(?![\.\de-])')
+  @_(r'(([1-9]\d*)|0)(?![^\s,;\)\}\]])')
   def INT(self, t):
     t.value = int(t.value)
     return t
 
   # float number
-  @_(r'(0|[1-9]\d*)(\.\d+)?(\d[e][+-]?\d+)?(?![\.\de-])')
+  @_(r'(0|[1-9]\d*)(\.\d+)?(\d[e][+-]?\d+)?(?![^\s,;\)])')
   def FLOAT(self, t):
     if '.' in t.value:
       if 'e' not in t.value:
@@ -34,7 +41,7 @@ class LexerForPL0(Lexer):
     return t
 
   # string
-  STRING = r'"(?:[^"]|\\["n\\])*"'
+  STRING = r'"(?:\\["n\\]|[^"\\])+"'
 
   #tokens declaration
   FUN = r'fun\b'
@@ -60,10 +67,10 @@ class LexerForPL0(Lexer):
   VARDECL = r':'
   EQ = r'=='
   NEQ = r'!='
-  LT = r'<'
-  GT = r'>'
   LTE = r'<='
+  LT = r'<'
   GTE = r'>='
+  GT = r'>'
   PLUS = r'\+'
   MINUS = r'-'
   TIMES = r'\*'
@@ -80,21 +87,24 @@ class LexerForPL0(Lexer):
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
+  # count newlines in string
+  def COMMENT(self, t):
+    self.lineno += t.value.count('\n')
+    return t
+
+
   # count newlines
   @_(r'\n+')
   def ignore_newline(self, t):
     self.lineno += t.value.count('\n')
 
-  # uncompleted comment
-  @_(r'/\*.*')
-  def ignore_uncompleted_comment(self, t):
-    print(f'Uncompleted comment at line {t.lineno}')
-    self.index += 1
-
   # error handling
-  @_(r'.+')
+  @_(r'[^\s]+')
   def error(self, t):
-    print(f'Illegal character {t.value[0:5]} ... at line {t.lineno}')
+    print(f'Illegal character {t.value[0:5]}  at line {t.lineno}')
+    next = self.index
+    if self.text[next:next+1] == '\n':
+      self.lineno += 1
     self.index += 1
     self.lineno += 1
 
@@ -110,7 +120,10 @@ def print_lexer(source):
   table.add_column('End', justify='right')
   for tok in lexer.tokenize(source):
     table.add_row(tok.type, str(tok.value), str(tok.lineno), str(tok.index), str(tok.end))
-  console.print(table)
+  if table.row_count == 0:
+    console.print('\nNO TOKENS FOUND\n')
+  else:
+    console.print(table)
   
 
 if __name__ == '__main__':
