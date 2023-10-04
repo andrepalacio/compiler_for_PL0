@@ -1,4 +1,9 @@
-program : func* funcMain EOF
+program : funcList
+    ;
+
+funcList : func funcList
+    | func
+    | funcMain
     ;
 
 func : 'fun' NAME '(' argList ')' var* 'begin' statementList 'end'
