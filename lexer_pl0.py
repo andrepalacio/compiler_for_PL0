@@ -26,7 +26,7 @@ class LexerForPL0(Lexer):
     self.index += 1
 
   # integer
-  @_(r'(([1-9]\d*)|0)(?![^\s,;\)\}\]])')
+  @_(r'(([1-9]\d*)|0)(?![^\s,;\)\]])')
   def INT(self, t):
     t.value = int(t.value)
     return t
@@ -105,7 +105,7 @@ class LexerForPL0(Lexer):
     if self.text[next:next+1] == '\n':
       self.lineno += 1
     self.index += 1
-    self.lineno += 1
+    #self.lineno += 1
 
 def print_lexer(source):
   #print tokens using rich library

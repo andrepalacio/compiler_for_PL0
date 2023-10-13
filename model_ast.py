@@ -1,71 +1,67 @@
 from dataclasses import dataclass
+from multimethod import multimeta
 from typing import List
 
 
-# Clases Abstractas
+# Clase Visitor
+class Visitor(metaclass=multimeta):
+  ...
 
+
+# Clases Abstractas
 @dataclass
 class Node:
-  ...
+  def accept(self, v:Visitor, *args, **kwargs):
+    return v.visit(self, *args, **kwargs)
 
 @dataclass
-class Function(Node):
-  ...
-
-@dataclass
-class Statement(Node):
+class Stmt(Node):
   ...
 
 @dataclass
 class Expr(Node):
   ...
 
+@dataclass
+class Type(Node):
+  ...
+
 # Clases concretas
 @dataclass
-class Program(Function):
-  functions : List[Function]
+class Program(Stmt):
+  functions : List[Stmt]
 
 @dataclass
-class Function(Function):
+class Function(Stmt):
   id         : str
   args       : List[Expr]
   variables  : List[Expr]
-  statements : List[Statement]
+  statements : List[Stmt]
 
 @dataclass
-class OneStatement(Statement):
+class OneStmt(Stmt):
   key   : str
-  left  : Statement
+  left  : Stmt
 
 @dataclass
-class DualStatement(Statement):
+class DualStmt(Stmt):
   keyLeft   : str
-  left      : Statement
+  left      : Stmt
   keyRight  : str
-  right     : Statement
+  right     : Stmt
 
 @dataclass
-class TripleStatement(Statement):
+class TripleStmt(Stmt):
   keyLeft   : str
-  left      : Statement
+  left      : Stmt
   keyMiddle : str
-  middle    : Statement
+  middle    : Stmt
   keyRight  : str
-  right     : Statement
+  right     : Stmt
 
 @dataclass
-class Join(Statement):
-  keyLeft     : Statement
-  statements  : List[Statement]
-  keyRight    : Statement
-
-@dataclass
-class Single(Statement):
+class Single(Stmt):
   key   : str
-
-@dataclass
-class StatementList(Statement):
-  statements : List[Statement]
 
 @dataclass
 class Relation(Expr):
@@ -79,10 +75,6 @@ class Not(Expr):
   rel   : Expr
 
 @dataclass
-class ExprList(Expr):
-  expr : List[Expr]
-
-@dataclass
 class Binary(Expr):
   op    : str
   left  : Expr
@@ -94,12 +86,12 @@ class Unary(Expr):
   expr  : Expr
 
 @dataclass
-class Call(Statement):
+class Call(Expr):
   id   : str
   expr : List[Expr]
 
 @dataclass
-class Assign(Statement):
+class Assign(Stmt):
   id   : str
   expr : Expr
 
@@ -130,3 +122,11 @@ class Vector(Expr):
 @dataclass
 class Ident(Expr):
   id : str
+
+@dataclass
+class String(Expr):
+  value : str
+
+@dataclass
+class DataType(Type):
+  type : str
