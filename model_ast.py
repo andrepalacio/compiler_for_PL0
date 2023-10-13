@@ -41,7 +41,7 @@ class Function(Stmt):
 @dataclass
 class OneStmt(Stmt):
   key   : str
-  left  : Stmt
+  value  : Stmt
 
 @dataclass
 class DualStmt(Stmt):
@@ -58,6 +58,12 @@ class TripleStmt(Stmt):
   middle    : Stmt
   keyRight  : str
   right     : Stmt
+
+@dataclass
+class Grouping(Expr):
+  begin : str
+  expr  : Expr
+  end   : str
 
 @dataclass
 class Single(Stmt):

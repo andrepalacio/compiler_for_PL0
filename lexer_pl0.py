@@ -7,17 +7,14 @@ class LexerForPL0(Lexer):
 
   # tokens
   tokens = {
-    FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, VARDECL, ASSIGN, PRINT, 
-    READ, WRITE, RETURN, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE,
-    SKIP, BREAK, AND, OR, NOT, TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, 
-    RPAREN, LBRACE, RBRACE, SEMICOLON, COMMA, LBRACKET, RBRACKET, COMMENT
+    FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, COLON, ASSIGN, PRINT, READ, WRITE, RETURN,
+    PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE, SKIP, BREAK, AND, OR, NOT, 
+    TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, RPAREN, LBRACE, RBRACE, SEMICOLON,
+    COMMA, LBRACKET, RBRACKET, EOF
   }
 
   # ignore spaces and tabs
   ignore = ' \t\r'
-
-  # ignore comments
-  COMMENT = r'/\*[\s\S]*?\*/'
 
   # uncompleted comment
   @_(r'/\*.*[\s\S]*(?!\*/)')
@@ -63,7 +60,7 @@ class LexerForPL0(Lexer):
   TINT = r'int\b'
   TFLOAT = r'float\b'
   ASSIGN = r':='
-  VARDECL = r':'
+  COLON = r':'
   EQ = r'=='
   NEQ = r'!='
   LTE = r'<='
@@ -82,11 +79,13 @@ class LexerForPL0(Lexer):
   COMMA = r','
   LBRACKET = r'\['
   RBRACKET = r'\]'
+  EOF = r'\$'
 
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
-  # count newlines in string
+  # ignore comments
+  @_(r'/\*[\s\S]*?\*/')
   def COMMENT(self, t):
     self.lineno += t.value.count('\n')
     return t

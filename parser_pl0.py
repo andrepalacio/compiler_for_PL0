@@ -1,11 +1,12 @@
 import logging
 from sly import Parser
-from lexer_pl0 import LexerForPL0
+from rich import print as rprint
+from lexer_pl0 import LexerForPL0, print_lexer
 from model_ast import *
 
 class parserForPL0(Parser):
-  log = logging.getLogger()
-  log.setLevel(logging.ERROR)
+  #log = logging.getLogger()
+  #log.setLevel(logging.ERROR)
   expected_shift_reduce = 1
   debugfile = 'parser.out'
 
@@ -13,35 +14,51 @@ class parserForPL0(Parser):
 
   # grammar rules implementation
 
-  @_('func* funcMain')
+  @_('funcList')
   def program(self, p):
     funcList = p.func.append(p.funcMain)
     return Program(funcList)
   
-  @_('FUN ID LPAREN RPAREN LBRACE argList RBRACE var* BEGIN statementList END')
+  @_('funcMain')
+  def program(self, p):
+    return Program(p.funcMain)
+  
+  @_('funcList func')
+  def funcList(self, p):
+    funcList = p.funcList.append(p.func)
+    return funcList
+  
+  @_('func')
+  def funcList(self, p):
+    return p.func
+  
+  @_('FUN ID LPAREN argList RPAREN varList statementList')
   def func(self, p):
-    return Function(p.ID, p.argList, p.var, p.statementList)
+    return Function(p.ID, p.argList, p.varList, p.statementList)
   
-  @_('FUN "main" LPAREN RPAREN LBRACE RBRACE var* BEGIN statementList END')
+  @_('FUN ID LPAREN RPAREN varList statementList')
   def funcMain(self, p):
-    return Function("main", [], p.var, p.statementList)
+    return Function(p.ID, [], p.varList, p.statementList)
   
-  @_('statement (SEMICOLON statementList)?')
+  @_('statement SEMICOLON statementList')
   def statementList(self, p):
-    stmtList = p.statementList.append(p.statement)
-    return StatementList(stmtList)
+    return [p.statement] + p.statementList
+
+  @_('statement')
+  def statementList(self, p):
+    return [p.statement]
 
   @_('WHILE relation DO statement')
   def statement(self, p):
-    return DualStatement(p.WHILE, p.relation, p.DO, p.statement)
+    return DualStmt(p.WHILE, p.relation, p.DO, p.statement)
 
   @_('IF relation THEN statement')
   def statement(self, p):
-    return DualStatement(p.IF, p.relation, p.THEN, p.statement)
+    return DualStmt(p.IF, p.relation, p.THEN, p.statement)
 
   @_('IF relation THEN statement ELSE statement')
   def statement(self, p):
-    return TripleStatement(p.IF, p.relation, p.THEN, p[3], p.ELSE, p[5])
+    return TripleStmt(p.IF, p.relation, p.THEN, p[3], p.ELSE, p[5])
 
   @_('ID ASSIGN expr')
   def statement(self, p):
@@ -49,23 +66,23 @@ class parserForPL0(Parser):
 
   @_('PRINT LPAREN STRING RPAREN')
   def statement(self, p):
-    return OneStatement(p.PRINT, p.STRING)
+    return OneStmt(p.PRINT, p.STRING)
 
   @_('WRITE LPAREN expr RPAREN')
   def statement(self, p):
-    return OneStatement(p.WRITE, p.expr)
+    return OneStmt(p.WRITE, p.expr)
 
-  @_('READ LPAREN LOCATION RPAREN')
+  @_('READ LPAREN location RPAREN')
   def statement(self, p):
-    return OneStatement(p.READ, p.LOCATION)
+    return OneStmt(p.READ, p.location)
 
   @_('RETURN expr')
   def statement(self, p):
-    return OneStatement(p.RETURN, p.expr)
+    return OneStmt(p.RETURN, p.expr)
 
-  @_('NAME LPAREN exprList RPAREN')
+  @_('ID LPAREN exprList RPAREN')
   def statement(self, p):
-    return OneStatement(p.NAME, p.exprList)
+    return Call(p.ID, p.exprList)
 
   @_('SKIP')
   def statement(self, p):
@@ -77,39 +94,39 @@ class parserForPL0(Parser):
 
   @_('BEGIN statementList END')
   def statement(self, p):
-    return Join(p.BEGIN, p.statementList, p.END)
+    return Grouping(p.BEGIN, p.statementList, p.END)
 
+  @_('expr LTE expr')
+  def relation(self, p):
+    return Relation(p.LTE, p[0], p[2])
+  
   @_('expr LT expr')
   def relation(self, p):
-    return Relation(p.LT, p[0], p[1])
+    return Relation(p.LT, p[0], p[2])
   
-  @_('expr LE expr')
+  @_('expr GTE expr')
   def relation(self, p):
-    return Relation(p.LE, p[0], p[1])
+    return Relation(p.GTE, p[0], p[2])
   
   @_('expr GT expr')
   def relation(self, p):
-    return Relation(p.GT, p[0], p[1])
-  
-  @_('expr GE expr')
-  def relation(self, p):
-    return Relation(p.GE, p[0], p[1])
+    return Relation(p.GT, p[0], p[2])
   
   @_('expr EQ expr')
   def relation(self, p):
-    return Relation(p.EQ, p[0], p[1])
+    return Relation(p.EQ, p[0], p[2])
   
-  @_('expr NE expr')
+  @_('expr NEQ expr')
   def relation(self, p):
-    return Relation(p.NE, p[0], p[1])
+    return Relation(p.NEQ, p[0], p[2])
   
   @_('relation AND relation')
   def relation(self, p):
-    return Relation(p.AND, p[0], p[1])
+    return Relation(p.AND, p[0], p[2])
   
   @_('relation OR relation')
   def relation(self, p):
-    return Relation(p.OR, p[0], p[1])
+    return Relation(p.OR, p[0], p[2])
   
   @_('NOT relation')
   def relation(self, p):
@@ -119,26 +136,29 @@ class parserForPL0(Parser):
   def relation(self, p):
     return p.relation
 
-  @_('expr (COMMA exprList)?')
+  @_('expr COMMA exprList')
   def exprList(self, p):
-    exprList = p.exprList.append(p.expr)
-    return ExprList(exprList)
+    return [p.expr] + p.exprList
+
+  @_('expr')
+  def exprList(self, p):
+    return [p.expr]
 
   @_('expr PLUS expr')
   def expr(self, p):
-    return Binary(p.PLUS, p[0], p[1])
+    return Binary(p.PLUS, p[0], p[2])
   
   @_('expr MINUS expr')
   def expr(self, p):
-    return Binary(p.MINUS, p[0], p[1])
+    return Binary(p.MINUS, p[0], p[2])
   
   @_('expr TIMES expr')
   def expr(self, p):
-    return Binary(p.TIMES, p[0], p[1])
+    return Binary(p.TIMES, p[0], p[2])
   
   @_('expr DIVIDE expr')
   def expr(self, p):
-    return Binary(p.DIVIDE, p[0], p[1])
+    return Binary(p.DIVIDE, p[0], p[2])
   
   @_('MINUS expr')
   def expr(self, p):
@@ -175,11 +195,23 @@ class parserForPL0(Parser):
   @_('TFLOAT LPAREN expr RPAREN')
   def expr(self, p):
     return p.expr
-
-  @_('var (COMMA argList)?')
-  def argList(self, p):
-    return p.argList
   
+  @_('var COMMA argList')
+  def argList(self, p):
+    return [p.var] + p.argList
+
+  @_('var')
+  def argList(self, p):
+    return [p.var]
+  
+  @_('var varList')
+  def varList(self, p):
+    return [p.var] + p.varList
+  
+  @_('var')
+  def varList(self, p):
+    return [p.var]
+
   @_('ID COLON TINT SEMICOLON')
   def var(self, p):
     return Var(p.ID, p.TINT)
@@ -222,3 +254,24 @@ class parserForPL0(Parser):
   def location(self, p):
     return Vector(p.ID, p.INT)
   
+  @_('ID LBRACKET ID RBRACKET')
+  def location(self, p):
+    return Vector(p[0], p[2])
+  
+  def error(self, p):
+    if p:
+      print("Syntax error at token", p.type,"line", p.lineno, "value", p.value)
+      # Just discard the token and tell the parser it's okay.
+      self.errok()
+    else:
+      print("Syntax error at EOF")
+  
+if __name__ == '__main__':
+  lexer = LexerForPL0()
+  parser = parserForPL0()
+  with open('test.pl0', 'r') as f:
+    text_input = f.read()
+    print(text_input)
+    print_lexer(text_input)
+    result = parser.parse(lexer.tokenize(text_input))
+    rprint(result)
