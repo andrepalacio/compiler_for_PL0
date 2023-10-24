@@ -8,8 +8,12 @@ class parserForPL0(Parser):
   debugfile = 'parserPL0.txt'
 
   precedence = (
+    ('left', 'AND', 'OR'),
+    ('left', 'EQ', 'NEQ'),
+    ('left', 'GT', 'GTE', 'LT', 'LTE'),
     ('left', 'PLUS', 'MINUS'),
-    ('left', 'TIMES', 'DIVIDE')
+    ('left', 'TIMES', 'DIVIDE'),
+    ('right', 'NOT', 'UNARY')
   )
 
   tokens = LexerForPL0.tokens
@@ -35,11 +39,11 @@ class parserForPL0(Parser):
   
   @_('statements SEMICOLON statementList')
   def statementList(self, p):
-    return [p.statements] + p.statements
+    return p.statements + p.statementList
   
   @_('statements')
   def statementList(self, p):
-    return [p.statements]
+    return p.statements
   
   @_('statement', 'noStatement')
   def statements(self, p):
@@ -121,7 +125,7 @@ class parserForPL0(Parser):
   def expr(self, p):
     return Binary(p[0], p[0], p[2])
   
-  @_('MINUS expr', 'PLUS expr')
+  @_('MINUS expr %prec UNARY', 'PLUS expr %prec UNARY')
   def expr(self, p):
     return Unary(p[0], p.expr)
   
@@ -161,19 +165,19 @@ class parserForPL0(Parser):
   def argList(self, p):
     return [p.var]
   
-  @_('varDecl SEMICOLON varList', 'func SEMICOLON varList')
+  @_('varDecl varList', 'func varList')
   def varList(self, p):
     return [p[0]] + p.varList
   
-  @_('varDecl', 'func')
+  @_('varDecl', 'func SEMICOLON')
   def varList(self, p):
     return [p[0]]
 
-  @_('ID COLON varType')
+  @_('ID COLON varType SEMICOLON')
   def varDecl(self, p):
     return Var(p.ID, p.varType)
   
-  @_('ID COLON vectorType')
+  @_('ID COLON vectorType SEMICOLON')
   def varDecl(self, p):
     return VectorVar(p.ID, p.vectorType[0], p.vectorType[1])
   
@@ -193,16 +197,6 @@ class parserForPL0(Parser):
   def number(self, p):
     return Float(p.FLOAT)
   
-  """ @_('MINUS INT')
-  def number(self, p):
-    n = -1 * p.INT
-    return Integer(n)
-  
-  @_('MINUS FLOAT')
-  def number(self, p):
-    n = -1 * p.FLOAT
-    return Float(n) """
-  
   @_('ID')
   def location(self, p):
     return Ident(p.ID)
@@ -215,14 +209,6 @@ class parserForPL0(Parser):
   def location(self, p):
     return Vector(p[0], p[2])
   
-  def error(self, p):
-    # if p:
-    #   print("Syntax error at token", p.type,"line", p.lineno, "value", p.value)
-    #   # Just discard the token and tell the parser it's okay.
-    #   self.errok()
-    # else:
-    #   print("Syntax error at EOF")
-    pass
   
 if __name__ == '__main__':
   lexer = LexerForPL0()
@@ -230,6 +216,6 @@ if __name__ == '__main__':
   with open('test.pl0', 'r') as f:
     text_input = f.read()
     # print(text_input)
-    # print_lexer(text_input)
+    print_lexer(text_input)
     result = parser.parse(lexer.tokenize(text_input))
-    # rprint(result)
+    rprint(result)

@@ -2,6 +2,7 @@ from sly import Lexer
 from rich.table import Table
 from rich.console import Console
 from sys import argv, exit
+from json import loads
 
 class LexerForPL0(Lexer):
 
@@ -38,6 +39,9 @@ class LexerForPL0(Lexer):
 
   # string
   STRING = r'"(?:\\["n\\]|[^"\\])+"'
+  def STRING(self, t):
+    t.value = loads(t.value)
+    return t
 
   #tokens declaration
   FUN = r'fun\b'
