@@ -9,8 +9,8 @@ class LexerForPL0(Lexer):
   tokens = {
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, COLON, ASSIGN, PRINT, READ, WRITE, RETURN,
     PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE, SKIP, BREAK, AND, OR, NOT, 
-    TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, RPAREN, LBRACE, RBRACE, SEMICOLON,
-    COMMA, LBRACKET, RBRACKET, EOF
+    TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, RPAREN, SEMICOLON,
+    COMMA, LBRACKET, RBRACKET,
   }
 
   # ignore spaces and tabs
@@ -73,13 +73,10 @@ class LexerForPL0(Lexer):
   DIVIDE = r'/'
   LPAREN = r'\('
   RPAREN = r'\)'
-  LBRACE = r'\{'
-  RBRACE = r'\}'
   SEMICOLON = r';'
   COMMA = r','
   LBRACKET = r'\['
   RBRACKET = r'\]'
-  EOF = r'\$'
 
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'

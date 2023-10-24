@@ -1,29 +1,22 @@
-import logging
 from sly import Parser
 from rich import print as rprint
 from lexer_pl0 import LexerForPL0, print_lexer
 from model_ast import *
 
 class parserForPL0(Parser):
-  #log = logging.getLogger()
-  #log.setLevel(logging.ERROR)
-  expected_shift_reduce = 1
-  debugfile = 'parser.out'
+  #expected_shift_reduce = 1
+  debugfile = 'parserPL0.txt'
+
+  precedence = (
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE')
+  )
 
   tokens = LexerForPL0.tokens
 
   # grammar rules implementation
-
-  @_('funcList')
-  def program(self, p):
-    funcList = p.func.append(p.funcMain)
-    return Program(funcList)
   
-  @_('funcMain')
-  def program(self, p):
-    return Program(p.funcMain)
-  
-  @_('funcList func')
+  @_('func funcList')
   def funcList(self, p):
     funcList = p.funcList.append(p.func)
     return funcList
@@ -37,24 +30,24 @@ class parserForPL0(Parser):
     return Function(p.ID, p.argList, p.varList, p.statementList)
   
   @_('FUN ID LPAREN RPAREN varList statementList')
-  def funcMain(self, p):
+  def func(self, p):
     return Function(p.ID, [], p.varList, p.statementList)
   
-  @_('statement SEMICOLON statementList')
+  @_('statements SEMICOLON statementList')
   def statementList(self, p):
-    return [p.statement] + p.statementList
-
-  @_('statement')
+    return [p.statements] + p.statements
+  
+  @_('statements')
   def statementList(self, p):
-    return [p.statement]
+    return [p.statements]
+  
+  @_('statement', 'noStatement')
+  def statements(self, p):
+    return [p[0]]
 
   @_('WHILE relation DO statement')
   def statement(self, p):
     return DualStmt(p.WHILE, p.relation, p.DO, p.statement)
-
-  @_('IF relation THEN statement')
-  def statement(self, p):
-    return DualStmt(p.IF, p.relation, p.THEN, p.statement)
 
   @_('IF relation THEN statement ELSE statement')
   def statement(self, p):
@@ -95,38 +88,18 @@ class parserForPL0(Parser):
   @_('BEGIN statementList END')
   def statement(self, p):
     return Grouping(p.BEGIN, p.statementList, p.END)
+  
+  @_('IF relation THEN statement')
+  def noStatement(self, p):
+    return DualStmt(p.IF, p.relation, p.THEN, p.statement)
 
-  @_('expr LTE expr')
+  @_('expr relExpr expr')
   def relation(self, p):
-    return Relation(p.LTE, p[0], p[2])
+    return Relation(p[1], p[0], p[2])
   
-  @_('expr LT expr')
-  def relation(self, p):
-    return Relation(p.LT, p[0], p[2])
-  
-  @_('expr GTE expr')
-  def relation(self, p):
-    return Relation(p.GTE, p[0], p[2])
-  
-  @_('expr GT expr')
-  def relation(self, p):
-    return Relation(p.GT, p[0], p[2])
-  
-  @_('expr EQ expr')
-  def relation(self, p):
-    return Relation(p.EQ, p[0], p[2])
-  
-  @_('expr NEQ expr')
-  def relation(self, p):
-    return Relation(p.NEQ, p[0], p[2])
-  
-  @_('relation AND relation')
-  def relation(self, p):
-    return Relation(p.AND, p[0], p[2])
-  
-  @_('relation OR relation')
-  def relation(self, p):
-    return Relation(p.OR, p[0], p[2])
+  @_('LTE', 'LT', 'GTE', 'GT', 'EQ', 'NEQ', 'AND', 'OR')
+  def relExpr(self, p):
+    return p[0]
   
   @_('NOT relation')
   def relation(self, p):
@@ -144,29 +117,13 @@ class parserForPL0(Parser):
   def exprList(self, p):
     return [p.expr]
 
-  @_('expr PLUS expr')
+  @_('expr PLUS expr', 'expr MINUS expr', 'expr TIMES expr', 'expr DIVIDE expr')
   def expr(self, p):
-    return Binary(p.PLUS, p[0], p[2])
+    return Binary(p[0], p[0], p[2])
   
-  @_('expr MINUS expr')
+  @_('MINUS expr', 'PLUS expr')
   def expr(self, p):
-    return Binary(p.MINUS, p[0], p[2])
-  
-  @_('expr TIMES expr')
-  def expr(self, p):
-    return Binary(p.TIMES, p[0], p[2])
-  
-  @_('expr DIVIDE expr')
-  def expr(self, p):
-    return Binary(p.DIVIDE, p[0], p[2])
-  
-  @_('MINUS expr')
-  def expr(self, p):
-    return Unary(p.MINUS, p.expr)
-  
-  @_('PLUS expr')
-  def expr(self, p):
-    return Unary(p.PLUS, p.expr)
+    return Unary(p[0], p.expr)
   
   @_('LPAREN expr RPAREN')
   def expr(self, p):
@@ -196,38 +153,38 @@ class parserForPL0(Parser):
   def expr(self, p):
     return p.expr
   
-  @_('var COMMA argList')
+  @_('varDecl COMMA argList')
   def argList(self, p):
     return [p.var] + p.argList
 
-  @_('var')
+  @_('varDecl')
   def argList(self, p):
     return [p.var]
   
-  @_('var varList')
+  @_('varDecl SEMICOLON varList', 'func SEMICOLON varList')
   def varList(self, p):
-    return [p.var] + p.varList
+    return [p[0]] + p.varList
   
-  @_('var')
+  @_('varDecl', 'func')
   def varList(self, p):
-    return [p.var]
+    return [p[0]]
 
-  @_('ID COLON TINT SEMICOLON')
-  def var(self, p):
-    return Var(p.ID, p.TINT)
+  @_('ID COLON varType')
+  def varDecl(self, p):
+    return Var(p.ID, p.varType)
   
-  @_('ID COLON TFLOAT SEMICOLON')
-  def var(self, p):
-    return Var(p.ID, p.TFLOAT)
+  @_('ID COLON vectorType')
+  def varDecl(self, p):
+    return VectorVar(p.ID, p.vectorType[0], p.vectorType[1])
   
-  @_('ID COLON TINT LBRACKET INT RBRACKET SEMICOLON')
-  def var(self, p):
-    return VectorVar(p.ID, p.TINT, p.INT)
+  @_('TINT', 'TFLOAT')
+  def varType(self, p):
+    return p[0]
   
-  @_('ID COLON TFLOAT LBRACKET INT RBRACKET SEMICOLON')
-  def var(self, p):
-    return VectorVar(p.ID, p.TFLOAT, p.INT)
-  
+  @_('TINT LBRACKET expr RBRACKET', 'TFLOAT LBRACKET expr RBRACKET')
+  def vectorType(self, p):
+    return p[0], p[2]
+
   @_('INT')
   def number(self, p):
     return Integer(p.INT)
@@ -236,7 +193,7 @@ class parserForPL0(Parser):
   def number(self, p):
     return Float(p.FLOAT)
   
-  @_('MINUS INT')
+  """ @_('MINUS INT')
   def number(self, p):
     n = -1 * p.INT
     return Integer(n)
@@ -244,7 +201,7 @@ class parserForPL0(Parser):
   @_('MINUS FLOAT')
   def number(self, p):
     n = -1 * p.FLOAT
-    return Float(n)
+    return Float(n) """
   
   @_('ID')
   def location(self, p):
@@ -259,19 +216,20 @@ class parserForPL0(Parser):
     return Vector(p[0], p[2])
   
   def error(self, p):
-    if p:
-      print("Syntax error at token", p.type,"line", p.lineno, "value", p.value)
-      # Just discard the token and tell the parser it's okay.
-      self.errok()
-    else:
-      print("Syntax error at EOF")
+    # if p:
+    #   print("Syntax error at token", p.type,"line", p.lineno, "value", p.value)
+    #   # Just discard the token and tell the parser it's okay.
+    #   self.errok()
+    # else:
+    #   print("Syntax error at EOF")
+    pass
   
 if __name__ == '__main__':
   lexer = LexerForPL0()
   parser = parserForPL0()
   with open('test.pl0', 'r') as f:
     text_input = f.read()
-    print(text_input)
-    print_lexer(text_input)
+    # print(text_input)
+    # print_lexer(text_input)
     result = parser.parse(lexer.tokenize(text_input))
-    rprint(result)
+    # rprint(result)
