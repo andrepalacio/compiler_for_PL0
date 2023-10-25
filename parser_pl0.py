@@ -20,6 +20,10 @@ class parserForPL0(Parser):
   tokens = LexerForPL0.tokens
 
   # grammar rules implementation
+
+  @_('funcList')
+  def program(self, p):
+    return Program(p.funcList)
   
   @_('func funcList')
   def funcList(self, p):
@@ -71,7 +75,7 @@ class parserForPL0(Parser):
 
   @_('PRINT LPAREN STRING RPAREN')
   def statement(self, p):
-    return OneStmt(p.PRINT, p.STRING)
+    return OneStmt(p.PRINT, String(p.STRING))
 
   @_('WRITE LPAREN expr RPAREN')
   def statement(self, p):
@@ -195,19 +199,19 @@ class parserForPL0(Parser):
 
   @_('ID COLON varType')
   def varDecl(self, p):
-    return Var(p.ID, p.varType)
+    return Var(Ident(p.ID), p.varType)
   
   @_('ID COLON vectorType')
   def varDecl(self, p):
-    return VectorVar(p.ID, p.vectorType[0], p.vectorType[1])
+    return VectorVar(Ident(p.ID), p.vectorType[0], p.vectorType[1])
   
   @_('TINT', 'TFLOAT')
   def varType(self, p):
-    return p[0]
+    return DataType(p[0])
   
   @_('TINT LBRACKET expr RBRACKET', 'TFLOAT LBRACKET expr RBRACKET')
   def vectorType(self, p):
-    return p[0], p[2]
+    return DataType(p[0]), p[2]
 
   @_('INT')
   def number(self, p):
@@ -237,5 +241,7 @@ if __name__ == '__main__':
     text_input = f.read()
     # print(text_input)
     # print_lexer(text_input)
-    result = parser.parse(lexer.tokenize(text_input))
-    rprint(result)
+    ast = parser.parse(lexer.tokenize(text_input))
+    rprint(ast)
+    Tree.print(ast)
+
