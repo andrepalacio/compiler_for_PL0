@@ -1,4 +1,5 @@
 from sly import Parser
+from sys import argv
 from rich import print as rprint
 from lexer_pl0 import LexerForPL0, print_lexer
 from model_ast import *
@@ -22,20 +23,27 @@ class parserForPL0(Parser):
   
   @_('func funcList')
   def funcList(self, p):
-    funcList = p.funcList.append(p.func)
-    return funcList
+    return [p.func] + p.funcList
   
   @_('func')
   def funcList(self, p):
-    return p.func
+    return [p.func]
   
-  @_('FUN ID LPAREN argList RPAREN varList statementList')
+  @_('FUN ID LPAREN argList RPAREN varList BEGIN statementList END')
   def func(self, p):
     return Function(p.ID, p.argList, p.varList, p.statementList)
   
-  @_('FUN ID LPAREN RPAREN varList statementList')
+  @_('FUN ID LPAREN RPAREN varList BEGIN statementList END')
   def func(self, p):
     return Function(p.ID, [], p.varList, p.statementList)
+  
+  @_('FUN ID LPAREN argList RPAREN BEGIN statementList END')
+  def func(self, p):
+    return Function(p.ID, p.argList, [], p.statementList)
+  
+  @_('FUN ID LPAREN RPAREN BEGIN statementList END')
+  def func(self, p):
+    return Function(p.ID, [], [], p.statementList)
   
   @_('statements SEMICOLON statementList')
   def statementList(self, p):
@@ -57,9 +65,9 @@ class parserForPL0(Parser):
   def statement(self, p):
     return TripleStmt(p.IF, p.relation, p.THEN, p[3], p.ELSE, p[5])
 
-  @_('ID ASSIGN expr')
+  @_('location ASSIGN expr')
   def statement(self, p):
-    return Assign(p.ID, p.expr)
+    return Assign(p.location, p.expr)
 
   @_('PRINT LPAREN STRING RPAREN')
   def statement(self, p):
@@ -80,6 +88,10 @@ class parserForPL0(Parser):
   @_('ID LPAREN exprList RPAREN')
   def statement(self, p):
     return Call(p.ID, p.exprList)
+  
+  @_('ID LPAREN RPAREN')
+  def statement(self, p):
+    return Call(p.ID, [])
 
   @_('SKIP')
   def statement(self, p):
@@ -97,6 +109,10 @@ class parserForPL0(Parser):
   def noStatement(self, p):
     return DualStmt(p.IF, p.relation, p.THEN, p.statement)
 
+  @_('expr relExpr relation')
+  def relation(self, p):
+    return Relation(p[1], p[0], p[2])
+  
   @_('expr relExpr expr')
   def relation(self, p):
     return Relation(p[1], p[0], p[2])
@@ -123,7 +139,7 @@ class parserForPL0(Parser):
 
   @_('expr PLUS expr', 'expr MINUS expr', 'expr TIMES expr', 'expr DIVIDE expr')
   def expr(self, p):
-    return Binary(p[0], p[0], p[2])
+    return Binary(p[1], p[0], p[2])
   
   @_('MINUS expr %prec UNARY', 'PLUS expr %prec UNARY')
   def expr(self, p):
@@ -136,6 +152,10 @@ class parserForPL0(Parser):
   @_('ID LPAREN exprList RPAREN')
   def expr(self, p):
     return Call(p.ID, p.exprList)
+  
+  @_('ID LPAREN RPAREN')
+  def expr(self, p):
+    return Call(p.ID, [])
   
   @_('ID')
   def expr(self, p):
@@ -159,25 +179,25 @@ class parserForPL0(Parser):
   
   @_('varDecl COMMA argList')
   def argList(self, p):
-    return [p.var] + p.argList
+    return [p.varDecl] + p.argList
 
   @_('varDecl')
   def argList(self, p):
-    return [p.var]
+    return [p.varDecl]
   
-  @_('varDecl varList', 'func varList')
+  @_('varDecl SEMICOLON varList', 'func SEMICOLON varList')
   def varList(self, p):
     return [p[0]] + p.varList
   
-  @_('varDecl', 'func SEMICOLON')
+  @_('varDecl SEMICOLON', 'func SEMICOLON')
   def varList(self, p):
     return [p[0]]
 
-  @_('ID COLON varType SEMICOLON')
+  @_('ID COLON varType')
   def varDecl(self, p):
     return Var(p.ID, p.varType)
   
-  @_('ID COLON vectorType SEMICOLON')
+  @_('ID COLON vectorType')
   def varDecl(self, p):
     return VectorVar(p.ID, p.vectorType[0], p.vectorType[1])
   
@@ -201,21 +221,21 @@ class parserForPL0(Parser):
   def location(self, p):
     return Ident(p.ID)
   
-  @_('ID LBRACKET INT RBRACKET')
+  @_('ID LBRACKET expr RBRACKET')
   def location(self, p):
-    return Vector(p.ID, p.INT)
-  
-  @_('ID LBRACKET ID RBRACKET')
-  def location(self, p):
-    return Vector(p[0], p[2])
+    return Vector(p.ID, p.expr)
   
   
+
 if __name__ == '__main__':
+  # import sys
+  # sys.setrecursionlimit(5000)
   lexer = LexerForPL0()
   parser = parserForPL0()
-  with open('test.pl0', 'r') as f:
+  filename = argv[1]
+  with open(filename, 'r') as f:
     text_input = f.read()
     # print(text_input)
-    print_lexer(text_input)
+    # print_lexer(text_input)
     result = parser.parse(lexer.tokenize(text_input))
     rprint(result)

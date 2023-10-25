@@ -10,27 +10,26 @@ class LexerForPL0(Lexer):
   tokens = {
     FUN, BEGIN, END, IF, THEN, ELSE, WHILE, DO, COLON, ASSIGN, PRINT, READ, WRITE, RETURN,
     PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, GT, LTE, GTE, SKIP, BREAK, AND, OR, NOT, 
-    TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, RPAREN, SEMICOLON,
-    COMMA, LBRACKET, RBRACKET,
+    TINT, TFLOAT, INT, FLOAT, ID, STRING, LPAREN, RPAREN, SEMICOLON, COMMA, LBRACKET, RBRACKET,
   }
 
   # ignore spaces and tabs
   ignore = ' \t\r'
 
-  # uncompleted comment
-  @_(r'/\*.*[\s\S]*(?!\*/)')
-  def uncompleted_comment(self, t):
-    print(f'Uncompleted comment {t.value[0:5]} at line {t.lineno}')
-    self.index += 1
-
+  # ignore comments
+  @_(r'/\*[\s\S]*?\*/')
+  def ignore_comment(self, t):
+    self.lineno += t.value.count('\n')
+    return t
+  
   # integer
-  @_(r'(([1-9]\d*)|0)(?![^\s,;\)\]])')
+  @_(r'(([1-9]\d*)|0)(?![\d\.])')
   def INT(self, t):
     t.value = int(t.value)
     return t
 
   # float number
-  @_(r'(0|[1-9]\d*)(\.\d+)?(\d[e][+-]?\d+)?(?![^\s,;\)])')
+  @_(r'(0|[1-9]\d*)(\.\d+)?(\d[e][+-]?\d+)?(?![\d])')
   def FLOAT(self, t):
     if '.' in t.value:
       if 'e' not in t.value:
@@ -85,17 +84,16 @@ class LexerForPL0(Lexer):
   # identifier
   ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
-  # ignore comments
-  @_(r'/\*[\s\S]*?\*/')
-  def COMMENT(self, t):
-    self.lineno += t.value.count('\n')
-    return t
-
-
   # count newlines
   @_(r'\n+')
   def ignore_newline(self, t):
     self.lineno += t.value.count('\n')
+
+  # uncompleted comment
+  @_(r'/\*.*[\s\S]*(?!\*/)')
+  def uncompleted_comment(self, t):
+    print(f'Uncompleted comment {t.value[0:5]} at line {t.lineno}')
+    self.index += 1
 
   # error handling
   @_(r'[^\s]+')

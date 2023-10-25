@@ -34,7 +34,7 @@ class Program(Stmt):
 @dataclass
 class Function(Stmt):
   id         : str
-  args       : List[Expr]
+  arguments  : List[Expr]
   variables  : List[Expr]
   statements : List[Stmt]
 
@@ -98,7 +98,7 @@ class Call(Expr):
 
 @dataclass
 class Assign(Stmt):
-  id   : str
+  loct : str
   expr : Expr
 
 @dataclass
