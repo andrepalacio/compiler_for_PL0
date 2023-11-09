@@ -175,11 +175,11 @@ class parserForPL0(Parser):
   
   @_('TINT LPAREN expr RPAREN')
   def expr(self, p):
-    return p.expr
+    return TypeCast(p.TINT, p.expr)
   
   @_('TFLOAT LPAREN expr RPAREN')
   def expr(self, p):
-    return p.expr
+    return TypeCast(p.TFLOAT, p.expr)
   
   @_('varDecl COMMA argList')
   def argList(self, p):
@@ -199,11 +199,11 @@ class parserForPL0(Parser):
 
   @_('ID COLON varType')
   def varDecl(self, p):
-    return Var(Ident(p.ID), p.varType)
+    return Var(p.ID, p.varType)
   
   @_('ID COLON vectorType')
   def varDecl(self, p):
-    return VectorVar(Ident(p.ID), p.vectorType[0], p.vectorType[1])
+    return VectorVar(p.ID, p.vectorType[0], p.vectorType[1])
   
   @_('TINT', 'TFLOAT')
   def varType(self, p):
@@ -215,11 +215,11 @@ class parserForPL0(Parser):
 
   @_('INT')
   def number(self, p):
-    return Integer(p.INT)
+    return p.INT
   
   @_('FLOAT')
   def number(self, p):
-    return Float(p.FLOAT)
+    return p.FLOAT
   
   @_('ID')
   def location(self, p):

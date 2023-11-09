@@ -92,14 +92,14 @@ class Unary(Expr):
   expr  : Expr
 
 @dataclass
+class TypeCast(Unary):
+  ...
+
+@dataclass
 class Call(Expr):
   id   : str
   expr : List[Expr]
 
-@dataclass
-class Assign(Stmt):
-  loct : str
-  expr : Expr
 
 @dataclass
 class Var(Expr):
@@ -107,27 +107,24 @@ class Var(Expr):
   type : str
 
 @dataclass
-class VectorVar(Expr):
+class VectorVar(Var):
   id   : str
   type : str
   size : Expr
 
-@dataclass
-class Integer(Expr):
-  value : int
+@dataclass 
+class Ident(Expr):
+  id   : str
 
 @dataclass
-class Float(Expr):
-  value : float
-
-@dataclass
-class Vector(Expr):
+class Vector(Ident):
   id   : str
   index : Expr
 
 @dataclass
-class Ident(Expr):
-  id : str
+class Assign(Stmt):
+  loct : Ident
+  expr : Expr
 
 @dataclass
 class String(Expr):
@@ -228,19 +225,10 @@ class Tree(Visitor):
     n.type.accept(self)
     n.size.accept(self)
 
-  def visit(self, n:Integer):
-    print(f"                      +-- {n.value}")
-
-  def visit(self, n:Float):
-    print(f"                      +-- {n.value}")
-
   def visit(self, n:Vector):
     print(f"                 +-- id ({n.id})")
     print(f"                 +-- size")
     n.index.accept(self)
-    
-  def visit(self, n:Ident):
-    print(f"                      +-- id ({n.id})")
 
   def visit(self, n:String):
     print(f"                 +-- {n.value}")

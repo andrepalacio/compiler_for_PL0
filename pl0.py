@@ -22,9 +22,9 @@ optional arguments:
 from contextlib import redirect_stdout
 from rich       import print
 
-from plex       import print_lexer
-from pparse     import gen_ast
-from context    import Context
+from lexer_pl0   import print_lexer
+from parser_pl0  import gen_ast
+from context     import Context
 
 import argparse
 
