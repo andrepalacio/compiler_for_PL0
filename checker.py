@@ -212,6 +212,7 @@ class Symtab:
 		'''
 		self.entries = {}
 		self.parent = parent
+		self.dtype = None
 		if self.parent:
 			self.parent.children.append(self)
 		self.children = []
@@ -238,20 +239,16 @@ class Symtab:
 		elif self.parent:
 			return self.parent.get(name)
 		return None
+	
+	def return_type(self, type):
+		self.dtype = type
 
-@dataclass
-class Literal(Expr):
-	...
-
-@dataclass
-class Integer(Literal):
-	value : int
-	dtype : DataType = DataType('int')
-
-@dataclass
-class Float(Literal):
-	value : float
-	dtype : DataType = DataType('float')
+	def add_child(self, child):
+		'''
+		Agrega una tabla de simbolos secundaria a esta tabla de
+		simbolos.
+		'''
+		self.children.append(child)
 
 
 class Checker(Visitor):
@@ -271,6 +268,7 @@ class Checker(Visitor):
 		# Devolver datatype asociado al nodo
 		expr_data = n.expr.accept()
 		if expr_data != None:
+			n.dtype = DataType(n.op)
 			return n.op
 		raise Exception("Expression can not be processed")
 
@@ -281,8 +279,9 @@ class Checker(Visitor):
 		# Comparar ambos tipo de datatype
 		ident = n.loct.accept()
 		expr = n.expr.accept()
-		if ident == expr:
-			pass
+		if ident != expr:
+			raise Exception("Invalid Datatypes")
+		return ident
 
 	def visit(self, n: Call, env: Symtab):
 		# Buscar la funcion en Symtab (extraer: Tipo de retorno, el # de parametros)
@@ -292,15 +291,6 @@ class Checker(Visitor):
 		# Retornar el datatype de la funcion
 		pass
 
-	def visit(self, n: Binary, env: Symtab):
-		# Visitar el hijo izquierdo (devuelve datatype)
-		# Visitar el hijo derecho (devuelve datatype)
-		# Comparar ambos tipo de datatype
-		ident = n.loct.accept()
-		expr = n.expr.accept()
-		if ident == expr:
-			pass
-
 	def visit(self, n: Relation, env: Symtab):
 		# Visitar el hijo izquierdo (devuelve datatype)
 		# Visitar el hijo derecho (devuelve datatype)
@@ -309,8 +299,20 @@ class Checker(Visitor):
 		expr = n.expr.accept()
 		if expr != None and ident != None:
 			if ident == expr:
-				pass
+				n.dtype = DataType('bool')
+				return n.dtype
 		raise Exception("Invalid Datatypes")
+	
+	def visit(self, n: Binary, env: Symtab):
+		# Visitar el hijo izquierdo (devuelve datatype)
+		# Visitar el hijo derecho (devuelve datatype)
+		# Comparar ambos tipo de datatype
+		ident = n.loct.accept()
+		expr = n.expr.accept()
+		if ident != expr or ident == None or expr == None:
+			raise Exception("Invalid Datatypes in Binary")
+		n.dtype = DataType(ident)
+		return n.dtype
 
 	def visit(self, n: Unary, env: Symtab):
 		# Visitar la expression asociada (devuelve datatype)
@@ -318,18 +320,28 @@ class Checker(Visitor):
 		expr_type = n.expr.accept()
 		if expr_type == None:
 			raise Exception("Error in type")
-		return expr_type
+		n.dtype = DataType(expr_type)
+		return n.dtype
 
 	def visit(self, n: Function, env: Symtab):
 		# Agregar el nombre de la funcion a Symtab
 		# Crear un nuevo contexto (Symtab)
 		# Visitar ParamList, VarList, StmtList
 		# Determinar el datatype de la funcion (revisando instrucciones return)
-		pass
+		env.add(n.id, n)
+		new_env = Symtab(env)
+		env.add_child(new_env)
+		for param in n.params:
+			param.accept(new_env)
+		for var in n.vars:
+			var.accept(new_env)
+		for stmt in n.stmts:
+			stmt.accept(new_env)
+		return new_env.dtype
 
 	def visit(self, n: Var, env: Symtab):
 		# Agregar el nombre de la variable a Symtab
-		env.add(n.id, n.type)
+		env.add(n.id, n)
 
 	# def visit(self, n: Parameter, env: Symtab):
 		# Agregar el nombre del parametro a Symtab
@@ -338,38 +350,58 @@ class Checker(Visitor):
 		info_type = n.value.accept()
 		if info_type == None:
 			raise NameError("Variable not found")
+		if n.key == 'return':
+			# Actualizar el datatype de la funcion
+			env.return_type(info_type)
+		return info_type
 		
 
-	def visit(self, n: While, env: Symtab):
+	def visit(self, n: DualStmt, env: Symtab):
 		# Visitar la condicion del While (Comprobar tipo bool)
 		# Visitar las Stmts
+		bool_type = n.left.accept()
+		if bool_type == None:
+			raise Exception("Invalid Datatype in condition")
+		expr_type = n.right.accept()
+		if expr_type == 'break' or expr_type == 'skip' :
+				if n.key != 'while':
+					raise Exception("Invalid Break or Skip")
+		if expr_type == None:
+			raise Exception("Invalid Datatype in statements")
+		return bool_type
 
-	def visit(self, n: Break, env: Symtab):
-		# Esta dentro de un While?
-
-	def visit(self, n: IfStmt, env: Symtab):
+	def visit(self, n: TripleStmt, env: Symtab):
 		# Visitar la condicion del IfStmt (Comprobar tipo bool)
 		# Visitar las Stmts del then y else
+		bool_type = n.left.accept()
+		if bool_type == None:
+			raise Exception("Invalid Datatype in condition")
+		expr1_type = n.middle.accept()
+		expr2_type = n.right.accept()
+		if expr1_type == None or expr2_type == None:
+			raise Exception("Invalid Datatype in statements")
+		return bool_type
 
-	def visit(self, n: Return, env: Symtab):
-		# Visitar la expresion asociada
-		# Actualizar el datatype de la funcion
-
-	def visit(self, n: Skip, env: Symtab):
-		...
+	def visit(self, n: Single, env: Symtab):
+		return n.key
+	
+	def visit(self, n: Grouping, env: Symtab):
+		# Visitar las Stmts
+		returning = None
+		for stmt in n.expr:
+			info = stmt.accept()
+			if info == 'skip' or info == 'break':
+				returning = info
+			elif info != None and returning == None:
+				returning = info
+		return returning
 
 	def visit(self, n: Program, env: Symtab):
 		# Crear un nuevo contexto (Symtab global)
 		# Visitar cada una de las declaraciones asociadas
-
-	def visit(self, n: StmtList, env: Symtab):
-		# Visitar cada una de las instruciones asociadas
-
-	def visit(self, n: VarList, env: Symtab):
-		# Visitar cada una de las variables asociadas
-
-	def visit(self, n: ParmList, env: Symtab):
-		# Visitar cada una de los parametros asociados
-
-	def visit(self, n: ArgList, env: Symtab):
-		# Visitar cada una de los argumentos asociados
+		# Verificar si existe la funcion main
+		new_env = Symtab(env)
+		for func in n.functions:
+			func.accept(new_env)
+		if new_env.get('main') == None:
+			raise Exception("Main function not found")

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from multimethod import multimeta
 from typing import List
 
@@ -28,12 +28,17 @@ class Type(Node):
 
 # Clases concretas
 @dataclass
+class DataType(Type):
+  type : str
+
+@dataclass
 class Program(Stmt):
   functions : List[Stmt]
 
 @dataclass
 class Function(Stmt):
   id         : str
+  dtype : DataType= field( init=False )
   arguments  : List[Expr]
   variables  : List[Expr]
   statements : List[Stmt]
@@ -72,6 +77,7 @@ class Single(Stmt):
 @dataclass
 class Relation(Expr):
   rel    : str
+  dtype : DataType= field( init=False )
   left  : Expr
   right : Expr
 
@@ -83,12 +89,14 @@ class Not(Expr):
 @dataclass
 class Binary(Expr):
   op    : str
+  dtype : DataType= field( init=False )
   left  : Expr
   right : Expr
 
 @dataclass
 class Unary(Expr):
   op    : str
+  dtype : DataType= field( init=False )
   expr  : Expr
 
 @dataclass
@@ -98,6 +106,7 @@ class TypeCast(Unary):
 @dataclass
 class Call(Expr):
   id   : str
+  dtype : DataType= field( init=False )
   expr : List[Expr]
 
 
@@ -131,9 +140,20 @@ class String(Expr):
   value : str
 
 @dataclass
-class DataType(Type):
-  type : str
+class Literal(Expr):
+	...
 
+@dataclass
+class Integer(Literal):
+	value : int
+	dtype : DataType = DataType('int')
+
+@dataclass
+class Float(Literal):
+	value : float
+	dtype : DataType = DataType('float')
+
+# Clase Tree
 
 class Tree(Visitor):
   def __init__(self, ast):
