@@ -37,11 +37,11 @@ class Program(Stmt):
 
 @dataclass
 class Function(Stmt):
-  id         : str
-  dtype : DataType= field( init=False )
-  arguments  : List[Expr]
-  variables  : List[Expr]
-  statements : List[Stmt]
+  id          : str
+  parameters  : List[Expr]
+  variables   : List[Expr]
+  statements  : List[Stmt]
+  dtype       : DataType = field(default_factory=lambda: DataType(None))
 
 @dataclass
 class OneStmt(Stmt):
@@ -77,9 +77,9 @@ class Single(Stmt):
 @dataclass
 class Relation(Expr):
   rel    : str
-  dtype : DataType= field( init=False )
-  left  : Expr
-  right : Expr
+  left   : Expr
+  right  : Expr
+  dtype  : DataType = field(default_factory=lambda: DataType(None))
 
 @dataclass
 class Not(Expr):
@@ -89,15 +89,15 @@ class Not(Expr):
 @dataclass
 class Binary(Expr):
   op    : str
-  dtype : DataType= field( init=False )
   left  : Expr
   right : Expr
+  dtype : DataType = field(default_factory=lambda: DataType(None))
 
 @dataclass
 class Unary(Expr):
   op    : str
-  dtype : DataType= field( init=False )
   expr  : Expr
+  dtype : DataType = field(default_factory=lambda: DataType(None))
 
 @dataclass
 class TypeCast(Unary):
@@ -106,19 +106,18 @@ class TypeCast(Unary):
 @dataclass
 class Call(Expr):
   id   : str
-  dtype : DataType= field( init=False )
   expr : List[Expr]
 
 
 @dataclass
 class Var(Expr):
   id   : str
-  type : str
+  type : DataType
 
 @dataclass
 class VectorVar(Var):
   id   : str
-  type : str
+  type : DataType
   size : Expr
 
 @dataclass 
@@ -136,31 +135,27 @@ class Assign(Stmt):
   expr : Expr
 
 @dataclass
-class String(Expr):
-  value : str
-
-@dataclass
 class Literal(Expr):
 	...
 
 @dataclass
 class Integer(Literal):
 	value : int
-	dtype : DataType = DataType('int')
+	dtype : DataType('int')
 
 @dataclass
 class Float(Literal):
 	value : float
-	dtype : DataType = DataType('float')
+	dtype : DataType('float')
 
 # Clase Tree
 
-class Tree(Visitor):
+""" class Tree(Visitor):
   def __init__(self, ast):
     self.ast = ast
 
   def visit(self, n:Program):
-    print("Program")
+    print("Program", type(n))
     print(" +-- funclist")
     for stmt in n.functions:
       stmt.accept(self)
@@ -237,13 +232,13 @@ class Tree(Visitor):
     n.expr.accept(self)
 
   def visit(self, n:Var):
-    print(f"                 +-- id({n.id.id})")
+    print(f"                 +-- id({n.id})")
     n.type.accept(self)
 
   def visit(self, n:VectorVar):
-    print(f"                 +-- id({n.id.id})")
+    print(f"                 +-- id({n.id})")
     n.type.accept(self)
-    n.size.accept(self)
+    print(f"                 +-- id({n.size})")
 
   def visit(self, n:Vector):
     print(f"                 +-- id ({n.id})")
@@ -259,4 +254,4 @@ class Tree(Visitor):
   @classmethod
   def print(cls, ast):
     vis = cls(ast)
-    return ast.accept(vis)
+    return ast.accept(vis) """

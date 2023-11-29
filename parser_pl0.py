@@ -4,7 +4,7 @@ from rich import print as rprint
 from lexer_pl0 import LexerForPL0, print_lexer
 from model_ast import *
 
-class parserForPL0(Parser):
+class ParserForPL0(Parser):
   #expected_shift_reduce = 1
   debugfile = 'parserPL0.txt'
 
@@ -75,7 +75,7 @@ class parserForPL0(Parser):
 
   @_('PRINT LPAREN STRING RPAREN')
   def statement(self, p):
-    return OneStmt(p.PRINT, String(p.STRING))
+    return OneStmt(p.PRINT, p.STRING)
 
   @_('WRITE LPAREN expr RPAREN')
   def statement(self, p):
@@ -215,11 +215,11 @@ class parserForPL0(Parser):
 
   @_('INT')
   def number(self, p):
-    return p.INT
+    return Integer(p.INT, DataType('int'))
   
   @_('FLOAT')
   def number(self, p):
-    return p.FLOAT
+    return Float(p.FLOAT, DataType('float'))
   
   @_('ID')
   def location(self, p):
@@ -235,7 +235,7 @@ if __name__ == '__main__':
   # import sys
   # sys.setrecursionlimit(5000)
   lexer = LexerForPL0()
-  parser = parserForPL0()
+  parser = ParserForPL0()
   filename = argv[1]
   with open(filename, 'r') as f:
     text_input = f.read()

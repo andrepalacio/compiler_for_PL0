@@ -1,180 +1,5 @@
-# checker.py
-'''
-Revision de Variables
-
-Recorre el AST para determinar el alcance adecuado para cada simbol.
-
-TODO: Podría agregar más manejo de errores.  Mejor manejo de mensajes de error.
-
-En este proyecto necesita realizar comprobaciones semánticas en su programa.
-Este problema es multifacético y complicado. Para que el cerebro no explote un poco menos, debes tomarlo con calma y en porciones pequeñas.
-La esencia básica de lo que debe hacer es la siguiente:
-
-1. Nombres y Simbolos:
-
-	Todos los identificadores deben ser definidos antes de que ellos sean usados. Esto incluye variables, constantes y nombres de tipo. Pro ejemplo, esta clase de codigo genera un error:
-
-		fun main()
-		begin
-			a := 3    /* Error. 'a' no definida.
-		end
-
-2. Tipos de literales y constantes
-
-	Todos los símbolos literales se escriben implícitamente y se les debe asignar un tipo de "int" o "float". Este tipo se utiliza para establecer el tipo de constantes. Por ejemplo:
-
-		fun main()
-			const a = 42;         // Tipo "int"
-			const b = 4.2;        // Tipo "float"
-		begin
-			skip
-		end
-
-3. Comprobar el tipo del operador
-
-	Los operadores binarios sólo operan con operandos de un tipo compatible.
-	De lo contrario, obtendrá un error de tipo. Por ejemplo:
-
-		fun main()
-			a : int;
-			b : float;
-			c : int;
-			d : int;
-			e : int;
-		begin
-			a := 2;
-			b := 3.14;
-			c := a + 3;    // OK
-			d := a + b;    // Error.  int + float
-			e := b + 4.5;  // Error.  int = float
-		end
-
-	Además, debe asegurarse de que solo se permitan operadores compatibles.
-
-4.  Asignacion.
-
-	Los lados izquierdo y derecho de una operación de asignación deben declararse como del mismo tipo.
-
-		fun main()
-			a : int;
-		begin
-			a = 4 + 5;     // OK
-			a = 4.5;       // Error. int = float
-		end
-
-	Los valores sólo se pueden asignar a declaraciones de variables, no a constantes.
-
-		fun main()
-			a : int;
-			const b = 42;
-		begin
-			a := 37;        // OK
-			b := 37;        // Error. b is const
-		end
-
-Estrategia de implementacion:
-------------------------
-Utilizará la clase `Visitor` definida en pl0/model.py para recorrer el árbol de análisis. Definirá varios métodos para diferentes tipos de nodos AST. Por ejemplo, si tienes un nodo Binary, escribirás un método como este:
-
-	def visit(self, n:Binary):
-		...
-
-Para comenzar, haga que cada método simplemente imprima un mensaje:
-
-	def visit(self, n:Binary):
-		print('visit:', n)
-		n.left.accept(self)
-		n.right.accept(self)
-
-Esto al menos le indicará que el método se está activando. Pruebe algunos ejemplos de código simples y asegúrese de que todos sus métodos se estén ejecutando realmente cuando recorra el árbol de análisis.
-
-Pruebas
--------
-Los archivos test3/*.pl0 contienen diferentes cosas que debes verificar. Se dan instrucciones específicas en cada archivo de prueba.
-
-Consejos generales
-------------------
-Lo principal en lo que debe pensar al verificar es en la corrección del programa. ¿Tiene sentido esta declaración u operación que está viendo en el árbol de análisis? De lo contrario, es necesario generar algún tipo de error. Utilice sus propias experiencias como programador como guía (piense en lo que causaría un error en su lenguaje de programación favorito).
-
-Un desafío será la gestión de muchos detalles complicados.
-Tienes que realizar un seguimiento de símbolos, tipos y diferentes tipos de capacidades.
-No siempre está claro cómo organizar mejor todo eso. Por lo tanto, espere andar un poco a tientas al principio.
-
-
-::: AST :::
-	|
-	+-- Node
-			|
-			+-- DataType
-			|   |
-			|   +-- SimpleType : 'int', 'float'
-			|   |
-			|   +-- ArrayType : 'int[]', 'float[]'
-			|
-			+-- Expression
-			|   |
-			|   +-- Literal
-			|   |   |
-			|   |   +-- Integer : 12, 34, 23
-			|   |   |
-			|   |   +-- Float : 3.14, 1.618
-			|   |
-			|   +-- Location
-			|   |   |
-			|   |   +-- SimpleLocation : 'a', 'b', 'casa',
-			|   |   |
-			|   |   +-- ArrayLocation
-			|   |
-			|   +-- TypeCast
-			|   |
-			|   +-- Assign
-			|   |
-			|   +-- FuncCall
-			|   |
-			|   +-- Binary
-			|   |
-			|   +-- Logical
-			|   |
-			|   +-- Unary
-			|
-			+-- Statement
-					|
-					+-- Declaration
-					|   |
-					|   +-- FuncDefinition
-					|   |
-					|   +-- VarDefinition
-					|   |
-					|   +-- Parameter
-					|
-					+-- Print
-					|
-					+-- Write
-					|
-					+-- Read
-					|
-					+-- While
-					|
-					+-- Break
-					|
-					+-- IfStmt
-					|
-					+-- Return
-					|
-					+-- Skip
-					|
-					+-- Program
-					|
-					+-- StmtList
-					|
-					+-- VarList
-					|
-					+-- ParmList
-					|
-					+-- ArgList
-
-'''
 #checker.py
+# from model_ast import 
 from model_ast import *
 
 # ---------------------------------------------------------------------
@@ -205,14 +30,14 @@ class Symtab:
 		'''
 		pass
 
-	def __init__(self, parent=None):
+	def __init__(self, name=None, parent=None):
 		'''
 		Crea una tabla de símbolos vacia con la tabla de
 		simbolos padre dada.
 		'''
+		self.name = name
 		self.entries = {}
 		self.parent = parent
-		self.dtype = None
 		if self.parent:
 			self.parent.children.append(self)
 		self.children = []
@@ -241,7 +66,9 @@ class Symtab:
 		return None
 	
 	def return_type(self, type):
-		self.dtype = type
+		if self.parent:
+			node = self.parent.get(self.name)
+			node.dtype = DataType(type)
 
 	def add_child(self, child):
 		'''
@@ -253,32 +80,43 @@ class Symtab:
 
 class Checker(Visitor):
 
+	def __init__(self, ast):
+		self.ast = ast
+
 	def visit(self, n: Literal, env: Symtab):
-		return n.dtype
+		return n.dtype.type
 
 	def visit(self, n: Ident, env: Symtab):
 		node = env.get(n.id)
-		if node != None:
+		if node == None:
+			raise NameError("ID not found")
+		return node.type.type
+
+	def visit(self, n: Vector, env: Symtab):
+		node = env.get(n.id)
+		if node == None:
+			raise NameError("ID not found")
+		index = n.index.accept(self, env)
+		if index == 'int':
 			return node.type.type
 		else:
-			raise NameError("ID not found")
+			raise Exception("Invalid index")
 
 	def visit(self, n: TypeCast, env: Symtab):
 		# Visitar la expresion asociada
 		# Devolver datatype asociado al nodo
-		expr_data = n.expr.accept()
+		expr_data = n.expr.accept(self, env)
 		if expr_data != None:
 			n.dtype = DataType(n.op)
 			return n.op
 		raise Exception("Expression can not be processed")
 
-
 	def visit(self, n: Assign, env: Symtab):
 		# Visitar el hijo izquierdo (devuelve datatype)
 		# Visitar el hijo derecho (devuelve datatype)
 		# Comparar ambos tipo de datatype
-		ident = n.loct.accept()
-		expr = n.expr.accept()
+		ident = n.loct.accept(self, env)
+		expr = n.expr.accept(self, env)
 		if ident != expr:
 			raise Exception("Invalid Datatypes")
 		return ident
@@ -289,65 +127,71 @@ class Checker(Visitor):
 		# Comparar el numero de argumentos con parametros
 		# Comparar cada uno de los tipos de los argumentos con los parametros
 		# Retornar el datatype de la funcion
-		pass
+		func = env.get(n.id)
+		if func == None:
+			raise Exception("Function not found")
+		if len(func.params) != len(n.expr):
+			raise Exception("Invalid number of arguments")
+		for i in range(len(func.params)):
+			if func.params[i].accept(self, env) != n.expr[i].accept(self, env):
+				raise Exception("Invalid Datatypes")
+		return func.dtype
 
 	def visit(self, n: Relation, env: Symtab):
 		# Visitar el hijo izquierdo (devuelve datatype)
 		# Visitar el hijo derecho (devuelve datatype)
 		# Comparar ambos tipo de datatype
-		ident = n.loct.accept()
-		expr = n.expr.accept()
-		if expr != None and ident != None:
-			if ident == expr:
+		exprl = n.left.accept(self, env)
+		exprr = n.right.accept(self, env)
+		if exprl != None and exprr != None:
+			if exprl == exprr:
 				n.dtype = DataType('bool')
 				return n.dtype
 		raise Exception("Invalid Datatypes")
+	
+	def visit(self, n: Not, env: Symtab):
+		reld = n.rel.accept(self, env)
+		if reld != None:
+			raise NameError("ID not found")
+		return reld.type
 	
 	def visit(self, n: Binary, env: Symtab):
 		# Visitar el hijo izquierdo (devuelve datatype)
 		# Visitar el hijo derecho (devuelve datatype)
 		# Comparar ambos tipo de datatype
-		ident = n.loct.accept()
-		expr = n.expr.accept()
-		if ident != expr or ident == None or expr == None:
+		left = n.left.accept(self, env)
+		right = n.right.accept(self, env)
+		if left != right or left == None or right == None:
 			raise Exception("Invalid Datatypes in Binary")
-		n.dtype = DataType(ident)
-		return n.dtype
+		n.dtype = DataType(left)
+		return n.dtype.type
 
 	def visit(self, n: Unary, env: Symtab):
 		# Visitar la expression asociada (devuelve datatype)
 		# Comparar datatype
-		expr_type = n.expr.accept()
+		expr_type = n.expr.accept(self, env)
 		if expr_type == None:
 			raise Exception("Error in type")
 		n.dtype = DataType(expr_type)
-		return n.dtype
-
-	def visit(self, n: Function, env: Symtab):
-		# Agregar el nombre de la funcion a Symtab
-		# Crear un nuevo contexto (Symtab)
-		# Visitar ParamList, VarList, StmtList
-		# Determinar el datatype de la funcion (revisando instrucciones return)
-		env.add(n.id, n)
-		new_env = Symtab(env)
-		env.add_child(new_env)
-		for param in n.params:
-			param.accept(new_env)
-		for var in n.vars:
-			var.accept(new_env)
-		for stmt in n.stmts:
-			stmt.accept(new_env)
-		return new_env.dtype
-
-	def visit(self, n: Var, env: Symtab):
-		# Agregar el nombre de la variable a Symtab
-		env.add(n.id, n)
+		return n.dtype.type
+	
+	def visit(self, n: TypeCast, env: Symtab):
+		# Visitar la expression asociada (devuelve datatype)
+		# Comparar datatype
+		expr_type = n.expr.accept(self, env)
+		if expr_type == None:
+			raise Exception("Error in type")
+		n.dtype = DataType(n.op)
+		return n.dtype.type
 
 	# def visit(self, n: Parameter, env: Symtab):
 		# Agregar el nombre del parametro a Symtab
 
 	def visit(self, n: OneStmt, env: Symtab):
-		info_type = n.value.accept()
+		if n.key == 'print':
+			if isinstance(n.value, str):
+				return 'string'
+		info_type = n.value.accept(self, env)
 		if info_type == None:
 			raise NameError("Variable not found")
 		if n.key == 'return':
@@ -359,10 +203,10 @@ class Checker(Visitor):
 	def visit(self, n: DualStmt, env: Symtab):
 		# Visitar la condicion del While (Comprobar tipo bool)
 		# Visitar las Stmts
-		bool_type = n.left.accept()
+		bool_type = n.left.accept(self, env)
 		if bool_type == None:
 			raise Exception("Invalid Datatype in condition")
-		expr_type = n.right.accept()
+		expr_type = n.right.accept(self, env)
 		if expr_type == 'break' or expr_type == 'skip' :
 				if n.key != 'while':
 					raise Exception("Invalid Break or Skip")
@@ -373,11 +217,11 @@ class Checker(Visitor):
 	def visit(self, n: TripleStmt, env: Symtab):
 		# Visitar la condicion del IfStmt (Comprobar tipo bool)
 		# Visitar las Stmts del then y else
-		bool_type = n.left.accept()
+		bool_type = n.left.accept(self, env)
 		if bool_type == None:
 			raise Exception("Invalid Datatype in condition")
-		expr1_type = n.middle.accept()
-		expr2_type = n.right.accept()
+		expr1_type = n.middle.accept(self, env)
+		expr2_type = n.right.accept(self, env)
 		if expr1_type == None or expr2_type == None:
 			raise Exception("Invalid Datatype in statements")
 		return bool_type
@@ -389,19 +233,66 @@ class Checker(Visitor):
 		# Visitar las Stmts
 		returning = None
 		for stmt in n.expr:
-			info = stmt.accept()
+			info = stmt.accept(self, env)
 			if info == 'skip' or info == 'break':
 				returning = info
 			elif info != None and returning == None:
 				returning = info
 		return returning
 
+	def visit(self, n: Function, env: Symtab):
+		# Agregar el nombre de la funcion a Symtab
+		# Crear un nuevo contexto (Symtab)
+		# Visitar ParamList, VarList, StmtList
+		# Determinar el datatype de la funcion (revisando instrucciones return)
+		env.add(n.id, n)
+		new_env = Symtab(n.id, env)
+		env.add_child(new_env)
+		for param in n.parameters:
+			param.accept(self, new_env)
+		for var in n.variables:
+			var.accept(self, new_env)
+		for stmt in n.statements:
+			stmt.accept(self, new_env)
+		return n.dtype.type
+
+	def visit(self, n: Var, env: Symtab):
+		# Agregar el nombre de la variable a Symtab
+		env.add(n.id, n)
+
+	def visit(self, n: VectorVar, env: Symtab):
+		# Agregar el nombre de la variable a Symtab
+		env.add(n.id, n)
+
 	def visit(self, n: Program, env: Symtab):
-		# Crear un nuevo contexto (Symtab global)
-		# Visitar cada una de las declaraciones asociadas
-		# Verificar si existe la funcion main
-		new_env = Symtab(env)
 		for func in n.functions:
-			func.accept(new_env)
-		if new_env.get('main') == None:
+			func.accept(self, env)
+		main = env.get('main')
+		if main == None:
 			raise Exception("Main function not found")
+		return main.dtype.type
+
+	@classmethod
+	def check(cls, ast):
+		vis = cls(ast)
+		env = Symtab()
+		return ast.accept(vis, env)
+	
+if __name__ == '__main__':
+	import sys
+	from lexer_pl0 import LexerForPL0
+	from parser_pl0 import ParserForPL0
+	from rich import print as rprint
+
+	lexer = LexerForPL0()
+	parser = ParserForPL0()
+
+	# with open(sys.argv[1]) as file:
+	with open('test.pl0') as file:
+		source = file.read()
+		ast = parser.parse(lexer.tokenize(source))
+
+	#Tree.print(ast)
+	Checker.check(ast)
+	rprint(ast)
+	#print(ast)

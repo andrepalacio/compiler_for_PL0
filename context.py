@@ -5,6 +5,7 @@ Clase de alto nivel que contiene todo sobre el análisis/ejecución de un prog
 Sirve como repositorio de información sobre el programa, incluido el código fuente, informe de errores, etc.
 '''
 #from interp  import Interpreter
+from checker import Checker
 from model_ast   import Node
 from lexer_pl0   import Lexer
 from parser_pl0  import Parser
@@ -15,7 +16,7 @@ class Context:
   def __init__(self):
     self.lexer  = Lexer(self)
     self.parser = Parser(self)
-    #self.interp = Interpreter(self)
+    self.interp = Checker(self)
     self.source = ''
     self.ast    = None
     self.have_errors = False
