@@ -70,13 +70,6 @@ class Symtab:
 			node = self.parent.get(self.name)
 			node.dtype = DataType(type)
 
-	def add_child(self, child):
-		'''
-		Agrega una tabla de simbolos secundaria a esta tabla de
-		simbolos.
-		'''
-		self.children.append(child)
-
 
 class Checker(Visitor):
 
@@ -97,7 +90,7 @@ class Checker(Visitor):
 		if node == None:
 			raise NameError("ID not found")
 		index = n.index.accept(self, env)
-		if index == 'int':
+		if index == 'int' and index >= 0 and index < node.size:
 			return node.type.type
 		else:
 			raise Exception("Invalid index")
@@ -130,12 +123,14 @@ class Checker(Visitor):
 		func = env.get(n.id)
 		if func == None:
 			raise Exception("Function not found")
-		if len(func.params) != len(n.expr):
+		if len(func.parameters) != len(n.expr):
 			raise Exception("Invalid number of arguments")
-		for i in range(len(func.params)):
-			if func.params[i].accept(self, env) != n.expr[i].accept(self, env):
-				raise Exception("Invalid Datatypes")
-		return func.dtype
+		for i in range(len(func.parameters)):
+			func_param = func.parameters[i].type.type
+			expr_param = n.expr[i].accept(self, env)
+			if func_param != expr_param:
+				raise Exception("Invalid Datatypes", func_param, expr_param)
+		return func.dtype.type
 
 	def visit(self, n: Relation, env: Symtab):
 		# Visitar el hijo izquierdo (devuelve datatype)
@@ -145,8 +140,8 @@ class Checker(Visitor):
 		exprr = n.right.accept(self, env)
 		if exprl != None and exprr != None:
 			if exprl == exprr:
-				n.dtype = DataType('bool')
-				return n.dtype
+				n.dtype = DataType(exprl)
+				return n.dtype.type
 		raise Exception("Invalid Datatypes")
 	
 	def visit(self, n: Not, env: Symtab):
@@ -173,15 +168,6 @@ class Checker(Visitor):
 		if expr_type == None:
 			raise Exception("Error in type")
 		n.dtype = DataType(expr_type)
-		return n.dtype.type
-	
-	def visit(self, n: TypeCast, env: Symtab):
-		# Visitar la expression asociada (devuelve datatype)
-		# Comparar datatype
-		expr_type = n.expr.accept(self, env)
-		if expr_type == None:
-			raise Exception("Error in type")
-		n.dtype = DataType(n.op)
 		return n.dtype.type
 
 	# def visit(self, n: Parameter, env: Symtab):
@@ -247,7 +233,6 @@ class Checker(Visitor):
 		# Determinar el datatype de la funcion (revisando instrucciones return)
 		env.add(n.id, n)
 		new_env = Symtab(n.id, env)
-		env.add_child(new_env)
 		for param in n.parameters:
 			param.accept(self, new_env)
 		for var in n.variables:
@@ -287,12 +272,13 @@ if __name__ == '__main__':
 	lexer = LexerForPL0()
 	parser = ParserForPL0()
 
-	# with open(sys.argv[1]) as file:
-	with open('test.pl0') as file:
+	with open(sys.argv[1]) as file:
+	# with open('test3/fib.pl0') as file:
 		source = file.read()
 		ast = parser.parse(lexer.tokenize(source))
 
 	#Tree.print(ast)
+	# rprint(ast)
 	Checker.check(ast)
 	rprint(ast)
 	#print(ast)

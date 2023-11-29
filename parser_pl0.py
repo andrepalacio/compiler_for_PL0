@@ -33,17 +33,17 @@ class ParserForPL0(Parser):
   def funcList(self, p):
     return [p.func]
   
-  @_('FUN ID LPAREN argList RPAREN varList BEGIN statementList END')
+  @_('FUN ID LPAREN paramList RPAREN varList BEGIN statementList END')
   def func(self, p):
-    return Function(p.ID, p.argList, p.varList, p.statementList)
+    return Function(p.ID, p.paramList, p.varList, p.statementList)
   
   @_('FUN ID LPAREN RPAREN varList BEGIN statementList END')
   def func(self, p):
     return Function(p.ID, [], p.varList, p.statementList)
   
-  @_('FUN ID LPAREN argList RPAREN BEGIN statementList END')
+  @_('FUN ID LPAREN paramList RPAREN BEGIN statementList END')
   def func(self, p):
-    return Function(p.ID, p.argList, [], p.statementList)
+    return Function(p.ID, p.paramList, [], p.statementList)
   
   @_('FUN ID LPAREN RPAREN BEGIN statementList END')
   def func(self, p):
@@ -113,16 +113,20 @@ class ParserForPL0(Parser):
   def noStatement(self, p):
     return DualStmt(p.IF, p.relation, p.THEN, p.statement)
 
-  @_('expr relExpr relation')
+  @_('relExpr AND relation', 'relExpr OR relation')
   def relation(self, p):
     return Relation(p[1], p[0], p[2])
   
-  @_('expr relExpr expr')
+  @_('relExpr')
   def relation(self, p):
-    return Relation(p[1], p[0], p[2])
+    return p.relExpr
   
-  @_('LTE', 'LT', 'GTE', 'GT', 'EQ', 'NEQ', 'AND', 'OR')
+  @_('expr relCon expr')
   def relExpr(self, p):
+    return Relation(p[1], p[0], p[2])
+  
+  @_('LTE', 'LT', 'GTE', 'GT', 'EQ', 'NEQ')
+  def relCon(self, p):
     return p[0]
   
   @_('NOT relation')
@@ -181,12 +185,12 @@ class ParserForPL0(Parser):
   def expr(self, p):
     return TypeCast(p.TFLOAT, p.expr)
   
-  @_('varDecl COMMA argList')
-  def argList(self, p):
-    return [p.varDecl] + p.argList
+  @_('varDecl COMMA paramList')
+  def paramList(self, p):
+    return [p.varDecl] + p.paramList
 
   @_('varDecl')
-  def argList(self, p):
+  def paramList(self, p):
     return [p.varDecl]
   
   @_('varDecl SEMICOLON varList', 'func SEMICOLON varList')
@@ -229,7 +233,12 @@ class ParserForPL0(Parser):
   def location(self, p):
     return Vector(p.ID, p.expr)
   
-  
+
+def gen_ast(text_input):
+  lexer = LexerForPL0()
+  parser = ParserForPL0()
+  return parser.parse(lexer.tokenize(text_input))
+
 
 if __name__ == '__main__':
   # import sys
@@ -243,5 +252,5 @@ if __name__ == '__main__':
     # print_lexer(text_input)
     ast = parser.parse(lexer.tokenize(text_input))
     rprint(ast)
-    Tree.print(ast)
+    # Tree.print(ast)
 

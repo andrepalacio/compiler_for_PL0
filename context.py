@@ -14,8 +14,8 @@ from parser_pl0  import Parser
 class Context:
 
   def __init__(self):
-    self.lexer  = Lexer(self)
-    self.parser = Parser(self)
+    self.lexer  = Lexer()
+    self.parser = Parser()
     self.interp = Checker(self)
     self.source = ''
     self.ast    = None

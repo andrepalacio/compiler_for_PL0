@@ -5,9 +5,9 @@ Rule 1     program -> funcList
 Rule 2     funcList -> func
 Rule 3     funcList -> func funcList
 Rule 4     func -> FUN ID LPAREN RPAREN BEGIN statementList END
-Rule 5     func -> FUN ID LPAREN argList RPAREN BEGIN statementList END
+Rule 5     func -> FUN ID LPAREN paramList RPAREN BEGIN statementList END
 Rule 6     func -> FUN ID LPAREN RPAREN varList BEGIN statementList END
-Rule 7     func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+Rule 7     func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
 Rule 8     statementList -> statements
 Rule 9     statementList -> statements SEMICOLON statementList
 Rule 10    statements -> noStatement
@@ -27,16 +27,16 @@ Rule 23    statement -> WHILE relation DO statement
 Rule 24    noStatement -> IF relation THEN statement
 Rule 25    relation -> LPAREN relation RPAREN
 Rule 26    relation -> NOT relation  [precedence=right, level=6]
-Rule 27    relation -> expr relExpr expr
-Rule 28    relation -> expr relExpr relation
-Rule 29    relExpr -> OR  [precedence=left, level=1]
-Rule 30    relExpr -> AND  [precedence=left, level=1]
-Rule 31    relExpr -> NEQ  [precedence=left, level=2]
-Rule 32    relExpr -> EQ  [precedence=left, level=2]
-Rule 33    relExpr -> GT  [precedence=left, level=3]
-Rule 34    relExpr -> GTE  [precedence=left, level=3]
-Rule 35    relExpr -> LT  [precedence=left, level=3]
-Rule 36    relExpr -> LTE  [precedence=left, level=3]
+Rule 27    relation -> relExpr
+Rule 28    relation -> relExpr OR relation  [precedence=left, level=1]
+Rule 29    relation -> relExpr AND relation  [precedence=left, level=1]
+Rule 30    relExpr -> expr relCon expr
+Rule 31    relCon -> NEQ  [precedence=left, level=2]
+Rule 32    relCon -> EQ  [precedence=left, level=2]
+Rule 33    relCon -> GT  [precedence=left, level=3]
+Rule 34    relCon -> GTE  [precedence=left, level=3]
+Rule 35    relCon -> LT  [precedence=left, level=3]
+Rule 36    relCon -> LTE  [precedence=left, level=3]
 Rule 37    exprList -> expr
 Rule 38    exprList -> expr COMMA exprList
 Rule 39    expr -> TFLOAT LPAREN expr RPAREN
@@ -53,8 +53,8 @@ Rule 49    expr -> expr DIVIDE expr  [precedence=left, level=5]
 Rule 50    expr -> expr TIMES expr  [precedence=left, level=5]
 Rule 51    expr -> expr MINUS expr  [precedence=left, level=4]
 Rule 52    expr -> expr PLUS expr  [precedence=left, level=4]
-Rule 53    argList -> varDecl
-Rule 54    argList -> varDecl COMMA argList
+Rule 53    paramList -> varDecl
+Rule 54    paramList -> varDecl COMMA paramList
 Rule 55    varList -> func SEMICOLON
 Rule 56    varList -> varDecl SEMICOLON
 Rule 57    varList -> func SEMICOLON varList
@@ -72,7 +72,7 @@ Rule 68    location -> ID
 
 Terminals, with rules where they appear:
 
-AND                  : 30
+AND                  : 29
 ASSIGN               : 21
 BEGIN                : 4 5 6 7 12
 BREAK                : 13
@@ -97,7 +97,7 @@ LTE                  : 36
 MINUS                : 48 51
 NEQ                  : 31
 NOT                  : 26
-OR                   : 29
+OR                   : 28
 PLUS                 : 47 52
 PRINT                : 20
 RBRACKET             : 42 63 64 67
@@ -117,17 +117,18 @@ error                :
 
 Nonterminals, with rules where they appear:
 
-argList              : 5 7 54
-expr                 : 17 19 21 27 27 28 37 38 39 40 42 46 47 48 49 49 50 50 51 51 52 52 63 64 67
+expr                 : 17 19 21 30 30 37 38 39 40 42 46 47 48 49 49 50 50 51 51 52 52 63 64 67
 exprList             : 16 38 45
 func                 : 2 3 55 57
 funcList             : 1 3
 location             : 18 21
 noStatement          : 10
 number               : 41
+paramList            : 5 7 54
 program              : 0
-relExpr              : 27 28
-relation             : 22 23 24 25 26 28
+relCon               : 30
+relExpr              : 27 28 29
+relation             : 22 23 24 25 26 28 29
 statement            : 11 22 22 23 24
 statementList        : 4 5 6 7 9 12
 statements           : 8 9
@@ -144,9 +145,9 @@ state 0
     (2) funcList -> . func
     (3) funcList -> . func funcList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     FUN             shift and go to state 4
 
     program                        shift and go to state 1
@@ -171,9 +172,9 @@ state 3
     (2) funcList -> . func
     (3) funcList -> . func funcList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     $end            reduce using rule 2 (funcList -> func .)
     FUN             shift and go to state 4
 
@@ -183,9 +184,9 @@ state 3
 state 4
 
     (4) func -> FUN . ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> FUN . ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> FUN . ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> FUN . ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> FUN . ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> FUN . ID LPAREN paramList RPAREN varList BEGIN statementList END
     ID              shift and go to state 6
 
 
@@ -198,26 +199,26 @@ state 5
 state 6
 
     (4) func -> FUN ID . LPAREN RPAREN BEGIN statementList END
-    (5) func -> FUN ID . LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> FUN ID . LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> FUN ID . LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> FUN ID . LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> FUN ID . LPAREN paramList RPAREN varList BEGIN statementList END
     LPAREN          shift and go to state 7
 
 
 state 7
 
     (4) func -> FUN ID LPAREN . RPAREN BEGIN statementList END
-    (5) func -> FUN ID LPAREN . argList RPAREN BEGIN statementList END
+    (5) func -> FUN ID LPAREN . paramList RPAREN BEGIN statementList END
     (6) func -> FUN ID LPAREN . RPAREN varList BEGIN statementList END
-    (7) func -> FUN ID LPAREN . argList RPAREN varList BEGIN statementList END
-    (53) argList -> . varDecl
-    (54) argList -> . varDecl COMMA argList
+    (7) func -> FUN ID LPAREN . paramList RPAREN varList BEGIN statementList END
+    (53) paramList -> . varDecl
+    (54) paramList -> . varDecl COMMA paramList
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     RPAREN          shift and go to state 9
     ID              shift and go to state 8
 
-    argList                        shift and go to state 10
+    paramList                      shift and go to state 10
     varDecl                        shift and go to state 11
 
 state 8
@@ -236,9 +237,9 @@ state 9
     (57) varList -> . func SEMICOLON varList
     (58) varList -> . varDecl SEMICOLON varList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     BEGIN           shift and go to state 13
@@ -251,16 +252,16 @@ state 9
 
 state 10
 
-    (5) func -> FUN ID LPAREN argList . RPAREN BEGIN statementList END
-    (7) func -> FUN ID LPAREN argList . RPAREN varList BEGIN statementList END
+    (5) func -> FUN ID LPAREN paramList . RPAREN BEGIN statementList END
+    (7) func -> FUN ID LPAREN paramList . RPAREN varList BEGIN statementList END
     RPAREN          shift and go to state 17
 
 
 state 11
 
-    (53) argList -> varDecl .
-    (54) argList -> varDecl . COMMA argList
-    RPAREN          reduce using rule 53 (argList -> varDecl .)
+    (53) paramList -> varDecl .
+    (54) paramList -> varDecl . COMMA paramList
+    RPAREN          reduce using rule 53 (paramList -> varDecl .)
     COMMA           shift and go to state 18
 
 
@@ -339,16 +340,16 @@ state 16
 
 state 17
 
-    (5) func -> FUN ID LPAREN argList RPAREN . BEGIN statementList END
-    (7) func -> FUN ID LPAREN argList RPAREN . varList BEGIN statementList END
+    (5) func -> FUN ID LPAREN paramList RPAREN . BEGIN statementList END
+    (7) func -> FUN ID LPAREN paramList RPAREN . varList BEGIN statementList END
     (55) varList -> . func SEMICOLON
     (56) varList -> . varDecl SEMICOLON
     (57) varList -> . func SEMICOLON varList
     (58) varList -> . varDecl SEMICOLON varList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     BEGIN           shift and go to state 41
@@ -361,15 +362,15 @@ state 17
 
 state 18
 
-    (54) argList -> varDecl COMMA . argList
-    (53) argList -> . varDecl
-    (54) argList -> . varDecl COMMA argList
+    (54) paramList -> varDecl COMMA . paramList
+    (53) paramList -> . varDecl
+    (54) paramList -> . varDecl COMMA paramList
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     ID              shift and go to state 8
 
     varDecl                        shift and go to state 11
-    argList                        shift and go to state 43
+    paramList                      shift and go to state 43
 
 state 19
 
@@ -491,8 +492,10 @@ state 29
     (22) statement -> IF . relation THEN statement ELSE statement
     (25) relation -> . LPAREN relation RPAREN
     (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -511,17 +514,18 @@ state 29
     (66) number -> . INT
     LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
     relation                       shift and go to state 51
-    expr                           shift and go to state 54
-    number                         shift and go to state 57
+    relExpr                        shift and go to state 54
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
 
 state 30
 
@@ -558,40 +562,40 @@ state 32
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 63
-    number                         shift and go to state 57
+    expr                           shift and go to state 64
+    number                         shift and go to state 58
 
 state 33
 
     (18) statement -> READ . LPAREN location RPAREN
-    LPAREN          shift and go to state 65
+    LPAREN          shift and go to state 66
 
 
 state 34
 
     (21) statement -> location . ASSIGN expr
-    ASSIGN          shift and go to state 66
+    ASSIGN          shift and go to state 67
 
 
 state 35
 
     (19) statement -> WRITE . LPAREN expr RPAREN
-    LPAREN          shift and go to state 67
+    LPAREN          shift and go to state 68
 
 
 state 36
 
     (20) statement -> PRINT . LPAREN STRING RPAREN
-    LPAREN          shift and go to state 68
+    LPAREN          shift and go to state 69
 
 
 state 37
@@ -599,8 +603,10 @@ state 37
     (23) statement -> WHILE . relation DO statement
     (25) relation -> . LPAREN relation RPAREN
     (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -619,17 +625,18 @@ state 37
     (66) number -> . INT
     LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    relation                       shift and go to state 69
-    expr                           shift and go to state 54
-    number                         shift and go to state 57
+    relation                       shift and go to state 70
+    relExpr                        shift and go to state 54
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
 
 state 38
 
@@ -664,7 +671,7 @@ state 38
     PRINT           shift and go to state 36
     WHILE           shift and go to state 37
 
-    statementList                  shift and go to state 70
+    statementList                  shift and go to state 71
     statements                     shift and go to state 26
     noStatement                    shift and go to state 27
     statement                      shift and go to state 28
@@ -679,9 +686,9 @@ state 39
     (57) varList -> . func SEMICOLON varList
     (58) varList -> . varDecl SEMICOLON varList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     BEGIN           reduce using rule 55 (varList -> func SEMICOLON .)
@@ -689,7 +696,7 @@ state 39
     ID              shift and go to state 8
 
     func                           shift and go to state 15
-    varList                        shift and go to state 71
+    varList                        shift and go to state 72
     varDecl                        shift and go to state 16
 
 state 40
@@ -701,9 +708,9 @@ state 40
     (57) varList -> . func SEMICOLON varList
     (58) varList -> . varDecl SEMICOLON varList
     (4) func -> . FUN ID LPAREN RPAREN BEGIN statementList END
-    (5) func -> . FUN ID LPAREN argList RPAREN BEGIN statementList END
+    (5) func -> . FUN ID LPAREN paramList RPAREN BEGIN statementList END
     (6) func -> . FUN ID LPAREN RPAREN varList BEGIN statementList END
-    (7) func -> . FUN ID LPAREN argList RPAREN varList BEGIN statementList END
+    (7) func -> . FUN ID LPAREN paramList RPAREN varList BEGIN statementList END
     (59) varDecl -> . ID COLON vectorType
     (60) varDecl -> . ID COLON varType
     BEGIN           reduce using rule 56 (varList -> varDecl SEMICOLON .)
@@ -711,12 +718,12 @@ state 40
     ID              shift and go to state 8
 
     varDecl                        shift and go to state 16
-    varList                        shift and go to state 72
+    varList                        shift and go to state 73
     func                           shift and go to state 15
 
 state 41
 
-    (5) func -> FUN ID LPAREN argList RPAREN BEGIN . statementList END
+    (5) func -> FUN ID LPAREN paramList RPAREN BEGIN . statementList END
     (8) statementList -> . statements
     (9) statementList -> . statements SEMICOLON statementList
     (10) statements -> . noStatement
@@ -747,7 +754,7 @@ state 41
     PRINT           shift and go to state 36
     WHILE           shift and go to state 37
 
-    statementList                  shift and go to state 73
+    statementList                  shift and go to state 74
     statements                     shift and go to state 26
     noStatement                    shift and go to state 27
     statement                      shift and go to state 28
@@ -755,14 +762,14 @@ state 41
 
 state 42
 
-    (7) func -> FUN ID LPAREN argList RPAREN varList . BEGIN statementList END
-    BEGIN           shift and go to state 74
+    (7) func -> FUN ID LPAREN paramList RPAREN varList . BEGIN statementList END
+    BEGIN           shift and go to state 75
 
 
 state 43
 
-    (54) argList -> varDecl COMMA argList .
-    RPAREN          reduce using rule 54 (argList -> varDecl COMMA argList .)
+    (54) paramList -> varDecl COMMA paramList .
+    RPAREN          reduce using rule 54 (paramList -> varDecl COMMA paramList .)
 
 
 state 44
@@ -784,17 +791,17 @@ state 44
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 75
-    number                         shift and go to state 57
+    expr                           shift and go to state 76
+    number                         shift and go to state 58
 
 state 45
 
@@ -815,17 +822,17 @@ state 45
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 76
-    number                         shift and go to state 57
+    expr                           shift and go to state 77
+    number                         shift and go to state 58
 
 state 46
 
@@ -849,19 +856,19 @@ state 46
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    RPAREN          shift and go to state 77
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    RPAREN          shift and go to state 78
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    exprList                       shift and go to state 78
-    expr                           shift and go to state 79
-    number                         shift and go to state 57
+    exprList                       shift and go to state 79
+    expr                           shift and go to state 80
+    number                         shift and go to state 58
 
 state 47
 
@@ -882,22 +889,22 @@ state 47
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 80
-    number                         shift and go to state 57
+    expr                           shift and go to state 81
+    number                         shift and go to state 58
 
 state 48
 
     (12) statement -> BEGIN statementList . END
-    END             shift and go to state 81
+    END             shift and go to state 82
 
 
 state 49
@@ -942,7 +949,7 @@ state 50
     WHILE           shift and go to state 37
 
     statements                     shift and go to state 26
-    statementList                  shift and go to state 82
+    statementList                  shift and go to state 83
     noStatement                    shift and go to state 27
     statement                      shift and go to state 28
     location                       shift and go to state 34
@@ -951,7 +958,7 @@ state 51
 
     (24) noStatement -> IF relation . THEN statement
     (22) statement -> IF relation . THEN statement ELSE statement
-    THEN            shift and go to state 83
+    THEN            shift and go to state 84
 
 
 state 52
@@ -960,8 +967,9 @@ state 52
     (46) expr -> LPAREN . expr RPAREN
     (25) relation -> . LPAREN relation RPAREN
     (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -976,29 +984,33 @@ state 52
     (50) expr -> . expr TIMES expr
     (51) expr -> . expr MINUS expr
     (52) expr -> . expr PLUS expr
+    (30) relExpr -> . expr relCon expr
     (65) number -> . FLOAT
     (66) number -> . INT
     LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    relation                       shift and go to state 84
-    expr                           shift and go to state 85
-    number                         shift and go to state 57
+    relation                       shift and go to state 85
+    expr                           shift and go to state 86
+    relExpr                        shift and go to state 54
+    number                         shift and go to state 58
 
 state 53
 
     (26) relation -> NOT . relation
     (25) relation -> . LPAREN relation RPAREN
     (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -1017,70 +1029,76 @@ state 53
     (66) number -> . INT
     LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    relation                       shift and go to state 86
-    expr                           shift and go to state 54
-    number                         shift and go to state 57
+    relation                       shift and go to state 87
+    relExpr                        shift and go to state 54
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
 
 state 54
 
-    (27) relation -> expr . relExpr expr
-    (28) relation -> expr . relExpr relation
+    (27) relation -> relExpr .
+    (28) relation -> relExpr . OR relation
+    (29) relation -> relExpr . AND relation
+    THEN            reduce using rule 27 (relation -> relExpr .)
+    DO              reduce using rule 27 (relation -> relExpr .)
+    RPAREN          reduce using rule 27 (relation -> relExpr .)
+    OR              shift and go to state 88
+    AND             shift and go to state 89
+
+
+state 55
+
+    (30) relExpr -> expr . relCon expr
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    (29) relExpr -> . OR
-    (30) relExpr -> . AND
-    (31) relExpr -> . NEQ
-    (32) relExpr -> . EQ
-    (33) relExpr -> . GT
-    (34) relExpr -> . GTE
-    (35) relExpr -> . LT
-    (36) relExpr -> . LTE
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-    OR              shift and go to state 92
-    AND             shift and go to state 93
-    NEQ             shift and go to state 94
-    EQ              shift and go to state 95
-    GT              shift and go to state 96
-    GTE             shift and go to state 97
-    LT              shift and go to state 98
-    LTE             shift and go to state 99
+    (31) relCon -> . NEQ
+    (32) relCon -> . EQ
+    (33) relCon -> . GT
+    (34) relCon -> . GTE
+    (35) relCon -> . LT
+    (36) relCon -> . LTE
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
+    NEQ             shift and go to state 95
+    EQ              shift and go to state 96
+    GT              shift and go to state 97
+    GTE             shift and go to state 98
+    LT              shift and go to state 99
+    LTE             shift and go to state 100
 
-    relExpr                        shift and go to state 87
-
-state 55
-
-    (39) expr -> TFLOAT . LPAREN expr RPAREN
-    LPAREN          shift and go to state 100
-
+    relCon                         shift and go to state 90
 
 state 56
 
-    (40) expr -> TINT . LPAREN expr RPAREN
+    (39) expr -> TFLOAT . LPAREN expr RPAREN
     LPAREN          shift and go to state 101
 
 
 state 57
+
+    (40) expr -> TINT . LPAREN expr RPAREN
+    LPAREN          shift and go to state 102
+
+
+state 58
 
     (41) expr -> number .
     DIVIDE          reduce using rule 41 (expr -> number .)
     TIMES           reduce using rule 41 (expr -> number .)
     MINUS           reduce using rule 41 (expr -> number .)
     PLUS            reduce using rule 41 (expr -> number .)
-    OR              reduce using rule 41 (expr -> number .)
-    AND             reduce using rule 41 (expr -> number .)
     NEQ             reduce using rule 41 (expr -> number .)
     EQ              reduce using rule 41 (expr -> number .)
     GT              reduce using rule 41 (expr -> number .)
@@ -1093,23 +1111,23 @@ state 57
     RBRACKET        reduce using rule 41 (expr -> number .)
     COMMA           reduce using rule 41 (expr -> number .)
     RPAREN          reduce using rule 41 (expr -> number .)
+    OR              reduce using rule 41 (expr -> number .)
+    AND             reduce using rule 41 (expr -> number .)
     THEN            reduce using rule 41 (expr -> number .)
     DO              reduce using rule 41 (expr -> number .)
 
 
-state 58
+state 59
 
     (42) expr -> ID . LBRACKET expr RBRACKET
     (43) expr -> ID .
     (44) expr -> ID . LPAREN RPAREN
     (45) expr -> ID . LPAREN exprList RPAREN
-    LBRACKET        shift and go to state 102
+    LBRACKET        shift and go to state 103
     DIVIDE          reduce using rule 43 (expr -> ID .)
     TIMES           reduce using rule 43 (expr -> ID .)
     MINUS           reduce using rule 43 (expr -> ID .)
     PLUS            reduce using rule 43 (expr -> ID .)
-    OR              reduce using rule 43 (expr -> ID .)
-    AND             reduce using rule 43 (expr -> ID .)
     NEQ             reduce using rule 43 (expr -> ID .)
     EQ              reduce using rule 43 (expr -> ID .)
     GT              reduce using rule 43 (expr -> ID .)
@@ -1122,12 +1140,14 @@ state 58
     RBRACKET        reduce using rule 43 (expr -> ID .)
     COMMA           reduce using rule 43 (expr -> ID .)
     RPAREN          reduce using rule 43 (expr -> ID .)
+    OR              reduce using rule 43 (expr -> ID .)
+    AND             reduce using rule 43 (expr -> ID .)
     THEN            reduce using rule 43 (expr -> ID .)
     DO              reduce using rule 43 (expr -> ID .)
-    LPAREN          shift and go to state 103
+    LPAREN          shift and go to state 104
 
 
-state 59
+state 60
 
     (47) expr -> PLUS . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1146,19 +1166,19 @@ state 59
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 104
-    number                         shift and go to state 57
+    expr                           shift and go to state 105
+    number                         shift and go to state 58
 
-state 60
+state 61
 
     (48) expr -> MINUS . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1177,27 +1197,25 @@ state 60
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 105
-    number                         shift and go to state 57
+    expr                           shift and go to state 106
+    number                         shift and go to state 58
 
-state 61
+state 62
 
     (65) number -> FLOAT .
     DIVIDE          reduce using rule 65 (number -> FLOAT .)
     TIMES           reduce using rule 65 (number -> FLOAT .)
     MINUS           reduce using rule 65 (number -> FLOAT .)
     PLUS            reduce using rule 65 (number -> FLOAT .)
-    OR              reduce using rule 65 (number -> FLOAT .)
-    AND             reduce using rule 65 (number -> FLOAT .)
     NEQ             reduce using rule 65 (number -> FLOAT .)
     EQ              reduce using rule 65 (number -> FLOAT .)
     GT              reduce using rule 65 (number -> FLOAT .)
@@ -1210,19 +1228,19 @@ state 61
     RBRACKET        reduce using rule 65 (number -> FLOAT .)
     COMMA           reduce using rule 65 (number -> FLOAT .)
     RPAREN          reduce using rule 65 (number -> FLOAT .)
+    OR              reduce using rule 65 (number -> FLOAT .)
+    AND             reduce using rule 65 (number -> FLOAT .)
     THEN            reduce using rule 65 (number -> FLOAT .)
     DO              reduce using rule 65 (number -> FLOAT .)
 
 
-state 62
+state 63
 
     (66) number -> INT .
     DIVIDE          reduce using rule 66 (number -> INT .)
     TIMES           reduce using rule 66 (number -> INT .)
     MINUS           reduce using rule 66 (number -> INT .)
     PLUS            reduce using rule 66 (number -> INT .)
-    OR              reduce using rule 66 (number -> INT .)
-    AND             reduce using rule 66 (number -> INT .)
     NEQ             reduce using rule 66 (number -> INT .)
     EQ              reduce using rule 66 (number -> INT .)
     GT              reduce using rule 66 (number -> INT .)
@@ -1235,11 +1253,13 @@ state 62
     RBRACKET        reduce using rule 66 (number -> INT .)
     COMMA           reduce using rule 66 (number -> INT .)
     RPAREN          reduce using rule 66 (number -> INT .)
+    OR              reduce using rule 66 (number -> INT .)
+    AND             reduce using rule 66 (number -> INT .)
     THEN            reduce using rule 66 (number -> INT .)
     DO              reduce using rule 66 (number -> INT .)
 
 
-state 63
+state 64
 
     (17) statement -> RETURN expr .
     (49) expr -> expr . DIVIDE expr
@@ -1249,13 +1269,13 @@ state 63
     SEMICOLON       reduce using rule 17 (statement -> RETURN expr .)
     END             reduce using rule 17 (statement -> RETURN expr .)
     ELSE            reduce using rule 17 (statement -> RETURN expr .)
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 64
+state 65
 
     (46) expr -> LPAREN . expr RPAREN
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1274,28 +1294,28 @@ state 64
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 106
-    number                         shift and go to state 57
+    expr                           shift and go to state 107
+    number                         shift and go to state 58
 
-state 65
+state 66
 
     (18) statement -> READ LPAREN . location RPAREN
     (67) location -> . ID LBRACKET expr RBRACKET
     (68) location -> . ID
-    ID              shift and go to state 108
+    ID              shift and go to state 109
 
-    location                       shift and go to state 107
+    location                       shift and go to state 108
 
-state 66
+state 67
 
     (21) statement -> location ASSIGN . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1314,19 +1334,19 @@ state 66
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 109
-    number                         shift and go to state 57
+    expr                           shift and go to state 110
+    number                         shift and go to state 58
 
-state 67
+state 68
 
     (19) statement -> WRITE LPAREN . expr RPAREN
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1345,57 +1365,57 @@ state 67
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 110
-    number                         shift and go to state 57
-
-state 68
-
-    (20) statement -> PRINT LPAREN . STRING RPAREN
-    STRING          shift and go to state 111
-
+    expr                           shift and go to state 111
+    number                         shift and go to state 58
 
 state 69
 
-    (23) statement -> WHILE relation . DO statement
-    DO              shift and go to state 112
+    (20) statement -> PRINT LPAREN . STRING RPAREN
+    STRING          shift and go to state 112
 
 
 state 70
 
-    (6) func -> FUN ID LPAREN RPAREN varList BEGIN statementList . END
-    END             shift and go to state 113
+    (23) statement -> WHILE relation . DO statement
+    DO              shift and go to state 113
 
 
 state 71
+
+    (6) func -> FUN ID LPAREN RPAREN varList BEGIN statementList . END
+    END             shift and go to state 114
+
+
+state 72
 
     (57) varList -> func SEMICOLON varList .
     BEGIN           reduce using rule 57 (varList -> func SEMICOLON varList .)
 
 
-state 72
+state 73
 
     (58) varList -> varDecl SEMICOLON varList .
     BEGIN           reduce using rule 58 (varList -> varDecl SEMICOLON varList .)
 
 
-state 73
-
-    (5) func -> FUN ID LPAREN argList RPAREN BEGIN statementList . END
-    END             shift and go to state 114
-
-
 state 74
 
-    (7) func -> FUN ID LPAREN argList RPAREN varList BEGIN . statementList END
+    (5) func -> FUN ID LPAREN paramList RPAREN BEGIN statementList . END
+    END             shift and go to state 115
+
+
+state 75
+
+    (7) func -> FUN ID LPAREN paramList RPAREN varList BEGIN . statementList END
     (8) statementList -> . statements
     (9) statementList -> . statements SEMICOLON statementList
     (10) statements -> . noStatement
@@ -1426,41 +1446,41 @@ state 74
     PRINT           shift and go to state 36
     WHILE           shift and go to state 37
 
-    statementList                  shift and go to state 115
+    statementList                  shift and go to state 116
     statements                     shift and go to state 26
     noStatement                    shift and go to state 27
     statement                      shift and go to state 28
     location                       shift and go to state 34
 
-state 75
+state 76
 
     (63) vectorType -> TFLOAT LBRACKET expr . RBRACKET
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    RBRACKET        shift and go to state 116
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    RBRACKET        shift and go to state 117
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 76
+state 77
 
     (64) vectorType -> TINT LBRACKET expr . RBRACKET
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    RBRACKET        shift and go to state 117
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    RBRACKET        shift and go to state 118
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 77
+state 78
 
     (15) statement -> ID LPAREN RPAREN .
     SEMICOLON       reduce using rule 15 (statement -> ID LPAREN RPAREN .)
@@ -1468,13 +1488,13 @@ state 77
     ELSE            reduce using rule 15 (statement -> ID LPAREN RPAREN .)
 
 
-state 78
+state 79
 
     (16) statement -> ID LPAREN exprList . RPAREN
-    RPAREN          shift and go to state 118
+    RPAREN          shift and go to state 119
 
 
-state 79
+state 80
 
     (37) exprList -> expr .
     (38) exprList -> expr . COMMA exprList
@@ -1483,28 +1503,28 @@ state 79
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
     RPAREN          reduce using rule 37 (exprList -> expr .)
-    COMMA           shift and go to state 119
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    COMMA           shift and go to state 120
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 80
+state 81
 
     (67) location -> ID LBRACKET expr . RBRACKET
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    RBRACKET        shift and go to state 120
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    RBRACKET        shift and go to state 121
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 81
+state 82
 
     (12) statement -> BEGIN statementList END .
     SEMICOLON       reduce using rule 12 (statement -> BEGIN statementList END .)
@@ -1512,13 +1532,13 @@ state 81
     ELSE            reduce using rule 12 (statement -> BEGIN statementList END .)
 
 
-state 82
+state 83
 
     (9) statementList -> statements SEMICOLON statementList .
     END             reduce using rule 9 (statementList -> statements SEMICOLON statementList .)
 
 
-state 83
+state 84
 
     (24) noStatement -> IF relation THEN . statement
     (22) statement -> IF relation THEN . statement ELSE statement
@@ -1544,52 +1564,47 @@ state 83
     READ            shift and go to state 33
     WRITE           shift and go to state 35
     PRINT           shift and go to state 36
-    IF              shift and go to state 121
+    IF              shift and go to state 122
     WHILE           shift and go to state 37
 
-    statement                      shift and go to state 122
+    statement                      shift and go to state 123
     location                       shift and go to state 34
-
-state 84
-
-    (25) relation -> LPAREN relation . RPAREN
-    RPAREN          shift and go to state 123
-
 
 state 85
 
+    (25) relation -> LPAREN relation . RPAREN
+    RPAREN          shift and go to state 124
+
+
+state 86
+
     (46) expr -> LPAREN expr . RPAREN
-    (27) relation -> expr . relExpr expr
-    (28) relation -> expr . relExpr relation
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    (29) relExpr -> . OR
-    (30) relExpr -> . AND
-    (31) relExpr -> . NEQ
-    (32) relExpr -> . EQ
-    (33) relExpr -> . GT
-    (34) relExpr -> . GTE
-    (35) relExpr -> . LT
-    (36) relExpr -> . LTE
-    RPAREN          shift and go to state 124
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-    OR              shift and go to state 92
-    AND             shift and go to state 93
-    NEQ             shift and go to state 94
-    EQ              shift and go to state 95
-    GT              shift and go to state 96
-    GTE             shift and go to state 97
-    LT              shift and go to state 98
-    LTE             shift and go to state 99
+    (30) relExpr -> expr . relCon expr
+    (31) relCon -> . NEQ
+    (32) relCon -> . EQ
+    (33) relCon -> . GT
+    (34) relCon -> . GTE
+    (35) relCon -> . LT
+    (36) relCon -> . LTE
+    RPAREN          shift and go to state 125
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
+    NEQ             shift and go to state 95
+    EQ              shift and go to state 96
+    GT              shift and go to state 97
+    GTE             shift and go to state 98
+    LT              shift and go to state 99
+    LTE             shift and go to state 100
 
-    relExpr                        shift and go to state 87
+    relCon                         shift and go to state 90
 
-state 86
+state 87
 
     (26) relation -> NOT relation .
     THEN            reduce using rule 26 (relation -> NOT relation .)
@@ -1597,10 +1612,15 @@ state 86
     RPAREN          reduce using rule 26 (relation -> NOT relation .)
 
 
-state 87
+state 88
 
-    (27) relation -> expr relExpr . expr
-    (28) relation -> expr relExpr . relation
+    (28) relation -> relExpr OR . relation
+    (25) relation -> . LPAREN relation RPAREN
+    (26) relation -> . NOT relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -1615,27 +1635,95 @@ state 87
     (50) expr -> . expr TIMES expr
     (51) expr -> . expr MINUS expr
     (52) expr -> . expr PLUS expr
-    (25) relation -> . LPAREN relation RPAREN
-    (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 127
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
+    LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 125
+    relExpr                        shift and go to state 54
     relation                       shift and go to state 126
-    number                         shift and go to state 57
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
 
-state 88
+state 89
+
+    (29) relation -> relExpr AND . relation
+    (25) relation -> . LPAREN relation RPAREN
+    (26) relation -> . NOT relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
+    (39) expr -> . TFLOAT LPAREN expr RPAREN
+    (40) expr -> . TINT LPAREN expr RPAREN
+    (41) expr -> . number
+    (42) expr -> . ID LBRACKET expr RBRACKET
+    (43) expr -> . ID
+    (44) expr -> . ID LPAREN RPAREN
+    (45) expr -> . ID LPAREN exprList RPAREN
+    (46) expr -> . LPAREN expr RPAREN
+    (47) expr -> . PLUS expr
+    (48) expr -> . MINUS expr
+    (49) expr -> . expr DIVIDE expr
+    (50) expr -> . expr TIMES expr
+    (51) expr -> . expr MINUS expr
+    (52) expr -> . expr PLUS expr
+    (65) number -> . FLOAT
+    (66) number -> . INT
+    LPAREN          shift and go to state 52
+    NOT             shift and go to state 53
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
+
+    relExpr                        shift and go to state 54
+    relation                       shift and go to state 127
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
+
+state 90
+
+    (30) relExpr -> expr relCon . expr
+    (39) expr -> . TFLOAT LPAREN expr RPAREN
+    (40) expr -> . TINT LPAREN expr RPAREN
+    (41) expr -> . number
+    (42) expr -> . ID LBRACKET expr RBRACKET
+    (43) expr -> . ID
+    (44) expr -> . ID LPAREN RPAREN
+    (45) expr -> . ID LPAREN exprList RPAREN
+    (46) expr -> . LPAREN expr RPAREN
+    (47) expr -> . PLUS expr
+    (48) expr -> . MINUS expr
+    (49) expr -> . expr DIVIDE expr
+    (50) expr -> . expr TIMES expr
+    (51) expr -> . expr MINUS expr
+    (52) expr -> . expr PLUS expr
+    (65) number -> . FLOAT
+    (66) number -> . INT
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
+
+    expr                           shift and go to state 128
+    number                         shift and go to state 58
+
+state 91
 
     (49) expr -> expr DIVIDE . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1654,19 +1742,19 @@ state 88
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 128
-    number                         shift and go to state 57
+    expr                           shift and go to state 129
+    number                         shift and go to state 58
 
-state 89
+state 92
 
     (50) expr -> expr TIMES . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1685,19 +1773,19 @@ state 89
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 129
-    number                         shift and go to state 57
+    expr                           shift and go to state 130
+    number                         shift and go to state 58
 
-state 90
+state 93
 
     (51) expr -> expr MINUS . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1716,19 +1804,19 @@ state 90
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 130
-    number                         shift and go to state 57
+    expr                           shift and go to state 131
+    number                         shift and go to state 58
 
-state 91
+state 94
 
     (52) expr -> expr PLUS . expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1747,131 +1835,97 @@ state 91
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 131
-    number                         shift and go to state 57
-
-state 92
-
-    (29) relExpr -> OR .
-    TFLOAT          reduce using rule 29 (relExpr -> OR .)
-    TINT            reduce using rule 29 (relExpr -> OR .)
-    ID              reduce using rule 29 (relExpr -> OR .)
-    LPAREN          reduce using rule 29 (relExpr -> OR .)
-    PLUS            reduce using rule 29 (relExpr -> OR .)
-    MINUS           reduce using rule 29 (relExpr -> OR .)
-    NOT             reduce using rule 29 (relExpr -> OR .)
-    FLOAT           reduce using rule 29 (relExpr -> OR .)
-    INT             reduce using rule 29 (relExpr -> OR .)
-
-
-state 93
-
-    (30) relExpr -> AND .
-    TFLOAT          reduce using rule 30 (relExpr -> AND .)
-    TINT            reduce using rule 30 (relExpr -> AND .)
-    ID              reduce using rule 30 (relExpr -> AND .)
-    LPAREN          reduce using rule 30 (relExpr -> AND .)
-    PLUS            reduce using rule 30 (relExpr -> AND .)
-    MINUS           reduce using rule 30 (relExpr -> AND .)
-    NOT             reduce using rule 30 (relExpr -> AND .)
-    FLOAT           reduce using rule 30 (relExpr -> AND .)
-    INT             reduce using rule 30 (relExpr -> AND .)
-
-
-state 94
-
-    (31) relExpr -> NEQ .
-    TFLOAT          reduce using rule 31 (relExpr -> NEQ .)
-    TINT            reduce using rule 31 (relExpr -> NEQ .)
-    ID              reduce using rule 31 (relExpr -> NEQ .)
-    LPAREN          reduce using rule 31 (relExpr -> NEQ .)
-    PLUS            reduce using rule 31 (relExpr -> NEQ .)
-    MINUS           reduce using rule 31 (relExpr -> NEQ .)
-    NOT             reduce using rule 31 (relExpr -> NEQ .)
-    FLOAT           reduce using rule 31 (relExpr -> NEQ .)
-    INT             reduce using rule 31 (relExpr -> NEQ .)
-
+    expr                           shift and go to state 132
+    number                         shift and go to state 58
 
 state 95
 
-    (32) relExpr -> EQ .
-    TFLOAT          reduce using rule 32 (relExpr -> EQ .)
-    TINT            reduce using rule 32 (relExpr -> EQ .)
-    ID              reduce using rule 32 (relExpr -> EQ .)
-    LPAREN          reduce using rule 32 (relExpr -> EQ .)
-    PLUS            reduce using rule 32 (relExpr -> EQ .)
-    MINUS           reduce using rule 32 (relExpr -> EQ .)
-    NOT             reduce using rule 32 (relExpr -> EQ .)
-    FLOAT           reduce using rule 32 (relExpr -> EQ .)
-    INT             reduce using rule 32 (relExpr -> EQ .)
+    (31) relCon -> NEQ .
+    TFLOAT          reduce using rule 31 (relCon -> NEQ .)
+    TINT            reduce using rule 31 (relCon -> NEQ .)
+    ID              reduce using rule 31 (relCon -> NEQ .)
+    LPAREN          reduce using rule 31 (relCon -> NEQ .)
+    PLUS            reduce using rule 31 (relCon -> NEQ .)
+    MINUS           reduce using rule 31 (relCon -> NEQ .)
+    FLOAT           reduce using rule 31 (relCon -> NEQ .)
+    INT             reduce using rule 31 (relCon -> NEQ .)
 
 
 state 96
 
-    (33) relExpr -> GT .
-    TFLOAT          reduce using rule 33 (relExpr -> GT .)
-    TINT            reduce using rule 33 (relExpr -> GT .)
-    ID              reduce using rule 33 (relExpr -> GT .)
-    LPAREN          reduce using rule 33 (relExpr -> GT .)
-    PLUS            reduce using rule 33 (relExpr -> GT .)
-    MINUS           reduce using rule 33 (relExpr -> GT .)
-    NOT             reduce using rule 33 (relExpr -> GT .)
-    FLOAT           reduce using rule 33 (relExpr -> GT .)
-    INT             reduce using rule 33 (relExpr -> GT .)
+    (32) relCon -> EQ .
+    TFLOAT          reduce using rule 32 (relCon -> EQ .)
+    TINT            reduce using rule 32 (relCon -> EQ .)
+    ID              reduce using rule 32 (relCon -> EQ .)
+    LPAREN          reduce using rule 32 (relCon -> EQ .)
+    PLUS            reduce using rule 32 (relCon -> EQ .)
+    MINUS           reduce using rule 32 (relCon -> EQ .)
+    FLOAT           reduce using rule 32 (relCon -> EQ .)
+    INT             reduce using rule 32 (relCon -> EQ .)
 
 
 state 97
 
-    (34) relExpr -> GTE .
-    TFLOAT          reduce using rule 34 (relExpr -> GTE .)
-    TINT            reduce using rule 34 (relExpr -> GTE .)
-    ID              reduce using rule 34 (relExpr -> GTE .)
-    LPAREN          reduce using rule 34 (relExpr -> GTE .)
-    PLUS            reduce using rule 34 (relExpr -> GTE .)
-    MINUS           reduce using rule 34 (relExpr -> GTE .)
-    NOT             reduce using rule 34 (relExpr -> GTE .)
-    FLOAT           reduce using rule 34 (relExpr -> GTE .)
-    INT             reduce using rule 34 (relExpr -> GTE .)
+    (33) relCon -> GT .
+    TFLOAT          reduce using rule 33 (relCon -> GT .)
+    TINT            reduce using rule 33 (relCon -> GT .)
+    ID              reduce using rule 33 (relCon -> GT .)
+    LPAREN          reduce using rule 33 (relCon -> GT .)
+    PLUS            reduce using rule 33 (relCon -> GT .)
+    MINUS           reduce using rule 33 (relCon -> GT .)
+    FLOAT           reduce using rule 33 (relCon -> GT .)
+    INT             reduce using rule 33 (relCon -> GT .)
 
 
 state 98
 
-    (35) relExpr -> LT .
-    TFLOAT          reduce using rule 35 (relExpr -> LT .)
-    TINT            reduce using rule 35 (relExpr -> LT .)
-    ID              reduce using rule 35 (relExpr -> LT .)
-    LPAREN          reduce using rule 35 (relExpr -> LT .)
-    PLUS            reduce using rule 35 (relExpr -> LT .)
-    MINUS           reduce using rule 35 (relExpr -> LT .)
-    NOT             reduce using rule 35 (relExpr -> LT .)
-    FLOAT           reduce using rule 35 (relExpr -> LT .)
-    INT             reduce using rule 35 (relExpr -> LT .)
+    (34) relCon -> GTE .
+    TFLOAT          reduce using rule 34 (relCon -> GTE .)
+    TINT            reduce using rule 34 (relCon -> GTE .)
+    ID              reduce using rule 34 (relCon -> GTE .)
+    LPAREN          reduce using rule 34 (relCon -> GTE .)
+    PLUS            reduce using rule 34 (relCon -> GTE .)
+    MINUS           reduce using rule 34 (relCon -> GTE .)
+    FLOAT           reduce using rule 34 (relCon -> GTE .)
+    INT             reduce using rule 34 (relCon -> GTE .)
 
 
 state 99
 
-    (36) relExpr -> LTE .
-    TFLOAT          reduce using rule 36 (relExpr -> LTE .)
-    TINT            reduce using rule 36 (relExpr -> LTE .)
-    ID              reduce using rule 36 (relExpr -> LTE .)
-    LPAREN          reduce using rule 36 (relExpr -> LTE .)
-    PLUS            reduce using rule 36 (relExpr -> LTE .)
-    MINUS           reduce using rule 36 (relExpr -> LTE .)
-    NOT             reduce using rule 36 (relExpr -> LTE .)
-    FLOAT           reduce using rule 36 (relExpr -> LTE .)
-    INT             reduce using rule 36 (relExpr -> LTE .)
+    (35) relCon -> LT .
+    TFLOAT          reduce using rule 35 (relCon -> LT .)
+    TINT            reduce using rule 35 (relCon -> LT .)
+    ID              reduce using rule 35 (relCon -> LT .)
+    LPAREN          reduce using rule 35 (relCon -> LT .)
+    PLUS            reduce using rule 35 (relCon -> LT .)
+    MINUS           reduce using rule 35 (relCon -> LT .)
+    FLOAT           reduce using rule 35 (relCon -> LT .)
+    INT             reduce using rule 35 (relCon -> LT .)
 
 
 state 100
+
+    (36) relCon -> LTE .
+    TFLOAT          reduce using rule 36 (relCon -> LTE .)
+    TINT            reduce using rule 36 (relCon -> LTE .)
+    ID              reduce using rule 36 (relCon -> LTE .)
+    LPAREN          reduce using rule 36 (relCon -> LTE .)
+    PLUS            reduce using rule 36 (relCon -> LTE .)
+    MINUS           reduce using rule 36 (relCon -> LTE .)
+    FLOAT           reduce using rule 36 (relCon -> LTE .)
+    INT             reduce using rule 36 (relCon -> LTE .)
+
+
+state 101
 
     (39) expr -> TFLOAT LPAREN . expr RPAREN
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1890,19 +1944,19 @@ state 100
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 132
-    number                         shift and go to state 57
+    expr                           shift and go to state 133
+    number                         shift and go to state 58
 
-state 101
+state 102
 
     (40) expr -> TINT LPAREN . expr RPAREN
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1921,19 +1975,19 @@ state 101
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 133
-    number                         shift and go to state 57
+    expr                           shift and go to state 134
+    number                         shift and go to state 58
 
-state 102
+state 103
 
     (42) expr -> ID LBRACKET . expr RBRACKET
     (39) expr -> . TFLOAT LPAREN expr RPAREN
@@ -1952,19 +2006,19 @@ state 102
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 134
-    number                         shift and go to state 57
+    expr                           shift and go to state 135
+    number                         shift and go to state 58
 
-state 103
+state 104
 
     (44) expr -> ID LPAREN . RPAREN
     (45) expr -> ID LPAREN . exprList RPAREN
@@ -1986,21 +2040,21 @@ state 103
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    RPAREN          shift and go to state 135
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    RPAREN          shift and go to state 136
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    exprList                       shift and go to state 136
-    expr                           shift and go to state 79
-    number                         shift and go to state 57
+    exprList                       shift and go to state 137
+    expr                           shift and go to state 80
+    number                         shift and go to state 58
 
-state 104
+state 105
 
     (47) expr -> PLUS expr .
     (49) expr -> expr . DIVIDE expr
@@ -2011,8 +2065,6 @@ state 104
     TIMES           reduce using rule 47 (expr -> PLUS expr .)
     MINUS           reduce using rule 47 (expr -> PLUS expr .)
     PLUS            reduce using rule 47 (expr -> PLUS expr .)
-    OR              reduce using rule 47 (expr -> PLUS expr .)
-    AND             reduce using rule 47 (expr -> PLUS expr .)
     NEQ             reduce using rule 47 (expr -> PLUS expr .)
     EQ              reduce using rule 47 (expr -> PLUS expr .)
     GT              reduce using rule 47 (expr -> PLUS expr .)
@@ -2025,11 +2077,13 @@ state 104
     RBRACKET        reduce using rule 47 (expr -> PLUS expr .)
     COMMA           reduce using rule 47 (expr -> PLUS expr .)
     RPAREN          reduce using rule 47 (expr -> PLUS expr .)
+    OR              reduce using rule 47 (expr -> PLUS expr .)
+    AND             reduce using rule 47 (expr -> PLUS expr .)
     THEN            reduce using rule 47 (expr -> PLUS expr .)
     DO              reduce using rule 47 (expr -> PLUS expr .)
 
 
-state 105
+state 106
 
     (48) expr -> MINUS expr .
     (49) expr -> expr . DIVIDE expr
@@ -2040,8 +2094,6 @@ state 105
     TIMES           reduce using rule 48 (expr -> MINUS expr .)
     MINUS           reduce using rule 48 (expr -> MINUS expr .)
     PLUS            reduce using rule 48 (expr -> MINUS expr .)
-    OR              reduce using rule 48 (expr -> MINUS expr .)
-    AND             reduce using rule 48 (expr -> MINUS expr .)
     NEQ             reduce using rule 48 (expr -> MINUS expr .)
     EQ              reduce using rule 48 (expr -> MINUS expr .)
     GT              reduce using rule 48 (expr -> MINUS expr .)
@@ -2054,31 +2106,33 @@ state 105
     RBRACKET        reduce using rule 48 (expr -> MINUS expr .)
     COMMA           reduce using rule 48 (expr -> MINUS expr .)
     RPAREN          reduce using rule 48 (expr -> MINUS expr .)
+    OR              reduce using rule 48 (expr -> MINUS expr .)
+    AND             reduce using rule 48 (expr -> MINUS expr .)
     THEN            reduce using rule 48 (expr -> MINUS expr .)
     DO              reduce using rule 48 (expr -> MINUS expr .)
 
 
-state 106
+state 107
 
     (46) expr -> LPAREN expr . RPAREN
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    RPAREN          shift and go to state 124
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-
-
-state 107
-
-    (18) statement -> READ LPAREN location . RPAREN
-    RPAREN          shift and go to state 137
+    RPAREN          shift and go to state 125
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
 state 108
+
+    (18) statement -> READ LPAREN location . RPAREN
+    RPAREN          shift and go to state 138
+
+
+state 109
 
     (67) location -> ID . LBRACKET expr RBRACKET
     (68) location -> ID .
@@ -2086,7 +2140,7 @@ state 108
     RPAREN          reduce using rule 68 (location -> ID .)
 
 
-state 109
+state 110
 
     (21) statement -> location ASSIGN expr .
     (49) expr -> expr . DIVIDE expr
@@ -2096,33 +2150,33 @@ state 109
     SEMICOLON       reduce using rule 21 (statement -> location ASSIGN expr .)
     END             reduce using rule 21 (statement -> location ASSIGN expr .)
     ELSE            reduce using rule 21 (statement -> location ASSIGN expr .)
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 110
+state 111
 
     (19) statement -> WRITE LPAREN expr . RPAREN
     (49) expr -> expr . DIVIDE expr
     (50) expr -> expr . TIMES expr
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
-    RPAREN          shift and go to state 138
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-
-
-state 111
-
-    (20) statement -> PRINT LPAREN STRING . RPAREN
     RPAREN          shift and go to state 139
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
 state 112
+
+    (20) statement -> PRINT LPAREN STRING . RPAREN
+    RPAREN          shift and go to state 140
+
+
+state 113
 
     (23) statement -> WHILE relation DO . statement
     (12) statement -> . BEGIN statementList END
@@ -2147,13 +2201,13 @@ state 112
     READ            shift and go to state 33
     WRITE           shift and go to state 35
     PRINT           shift and go to state 36
-    IF              shift and go to state 121
+    IF              shift and go to state 122
     WHILE           shift and go to state 37
 
-    statement                      shift and go to state 140
+    statement                      shift and go to state 141
     location                       shift and go to state 34
 
-state 113
+state 114
 
     (6) func -> FUN ID LPAREN RPAREN varList BEGIN statementList END .
     FUN             reduce using rule 6 (func -> FUN ID LPAREN RPAREN varList BEGIN statementList END .)
@@ -2161,21 +2215,21 @@ state 113
     SEMICOLON       reduce using rule 6 (func -> FUN ID LPAREN RPAREN varList BEGIN statementList END .)
 
 
-state 114
-
-    (5) func -> FUN ID LPAREN argList RPAREN BEGIN statementList END .
-    FUN             reduce using rule 5 (func -> FUN ID LPAREN argList RPAREN BEGIN statementList END .)
-    $end            reduce using rule 5 (func -> FUN ID LPAREN argList RPAREN BEGIN statementList END .)
-    SEMICOLON       reduce using rule 5 (func -> FUN ID LPAREN argList RPAREN BEGIN statementList END .)
-
-
 state 115
 
-    (7) func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList . END
-    END             shift and go to state 141
+    (5) func -> FUN ID LPAREN paramList RPAREN BEGIN statementList END .
+    FUN             reduce using rule 5 (func -> FUN ID LPAREN paramList RPAREN BEGIN statementList END .)
+    $end            reduce using rule 5 (func -> FUN ID LPAREN paramList RPAREN BEGIN statementList END .)
+    SEMICOLON       reduce using rule 5 (func -> FUN ID LPAREN paramList RPAREN BEGIN statementList END .)
 
 
 state 116
+
+    (7) func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList . END
+    END             shift and go to state 142
+
+
+state 117
 
     (63) vectorType -> TFLOAT LBRACKET expr RBRACKET .
     COMMA           reduce using rule 63 (vectorType -> TFLOAT LBRACKET expr RBRACKET .)
@@ -2183,7 +2237,7 @@ state 116
     SEMICOLON       reduce using rule 63 (vectorType -> TFLOAT LBRACKET expr RBRACKET .)
 
 
-state 117
+state 118
 
     (64) vectorType -> TINT LBRACKET expr RBRACKET .
     COMMA           reduce using rule 64 (vectorType -> TINT LBRACKET expr RBRACKET .)
@@ -2191,7 +2245,7 @@ state 117
     SEMICOLON       reduce using rule 64 (vectorType -> TINT LBRACKET expr RBRACKET .)
 
 
-state 118
+state 119
 
     (16) statement -> ID LPAREN exprList RPAREN .
     SEMICOLON       reduce using rule 16 (statement -> ID LPAREN exprList RPAREN .)
@@ -2199,7 +2253,7 @@ state 118
     ELSE            reduce using rule 16 (statement -> ID LPAREN exprList RPAREN .)
 
 
-state 119
+state 120
 
     (38) exprList -> expr COMMA . exprList
     (37) exprList -> . expr
@@ -2220,33 +2274,35 @@ state 119
     (52) expr -> . expr PLUS expr
     (65) number -> . FLOAT
     (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 64
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    LPAREN          shift and go to state 65
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    expr                           shift and go to state 79
-    exprList                       shift and go to state 142
-    number                         shift and go to state 57
+    expr                           shift and go to state 80
+    exprList                       shift and go to state 143
+    number                         shift and go to state 58
 
-state 120
+state 121
 
     (67) location -> ID LBRACKET expr RBRACKET .
     ASSIGN          reduce using rule 67 (location -> ID LBRACKET expr RBRACKET .)
     RPAREN          reduce using rule 67 (location -> ID LBRACKET expr RBRACKET .)
 
 
-state 121
+state 122
 
     (22) statement -> IF . relation THEN statement ELSE statement
     (25) relation -> . LPAREN relation RPAREN
     (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
+    (27) relation -> . relExpr
+    (28) relation -> . relExpr OR relation
+    (29) relation -> . relExpr AND relation
+    (30) relExpr -> . expr relCon expr
     (39) expr -> . TFLOAT LPAREN expr RPAREN
     (40) expr -> . TINT LPAREN expr RPAREN
     (41) expr -> . number
@@ -2265,28 +2321,29 @@ state 121
     (66) number -> . INT
     LPAREN          shift and go to state 52
     NOT             shift and go to state 53
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    TFLOAT          shift and go to state 56
+    TINT            shift and go to state 57
+    ID              shift and go to state 59
+    PLUS            shift and go to state 60
+    MINUS           shift and go to state 61
+    FLOAT           shift and go to state 62
+    INT             shift and go to state 63
 
-    relation                       shift and go to state 143
-    expr                           shift and go to state 54
-    number                         shift and go to state 57
+    relation                       shift and go to state 144
+    relExpr                        shift and go to state 54
+    expr                           shift and go to state 55
+    number                         shift and go to state 58
 
-state 122
+state 123
 
     (24) noStatement -> IF relation THEN statement .
     (22) statement -> IF relation THEN statement . ELSE statement
     SEMICOLON       reduce using rule 24 (noStatement -> IF relation THEN statement .)
     END             reduce using rule 24 (noStatement -> IF relation THEN statement .)
-    ELSE            shift and go to state 144
+    ELSE            shift and go to state 145
 
 
-state 123
+state 124
 
     (25) relation -> LPAREN relation RPAREN .
     THEN            reduce using rule 25 (relation -> LPAREN relation RPAREN .)
@@ -2294,15 +2351,13 @@ state 123
     RPAREN          reduce using rule 25 (relation -> LPAREN relation RPAREN .)
 
 
-state 124
+state 125
 
     (46) expr -> LPAREN expr RPAREN .
     DIVIDE          reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     TIMES           reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     MINUS           reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     PLUS            reduce using rule 46 (expr -> LPAREN expr RPAREN .)
-    OR              reduce using rule 46 (expr -> LPAREN expr RPAREN .)
-    AND             reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     NEQ             reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     EQ              reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     GT              reduce using rule 46 (expr -> LPAREN expr RPAREN .)
@@ -2315,92 +2370,47 @@ state 124
     RBRACKET        reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     COMMA           reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     RPAREN          reduce using rule 46 (expr -> LPAREN expr RPAREN .)
+    OR              reduce using rule 46 (expr -> LPAREN expr RPAREN .)
+    AND             reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     THEN            reduce using rule 46 (expr -> LPAREN expr RPAREN .)
     DO              reduce using rule 46 (expr -> LPAREN expr RPAREN .)
 
 
-state 125
-
-    (27) relation -> expr relExpr expr .
-    (49) expr -> expr . DIVIDE expr
-    (50) expr -> expr . TIMES expr
-    (51) expr -> expr . MINUS expr
-    (52) expr -> expr . PLUS expr
-    (27) relation -> expr . relExpr expr
-    (28) relation -> expr . relExpr relation
-    (29) relExpr -> . OR
-    (30) relExpr -> . AND
-    (31) relExpr -> . NEQ
-    (32) relExpr -> . EQ
-    (33) relExpr -> . GT
-    (34) relExpr -> . GTE
-    (35) relExpr -> . LT
-    (36) relExpr -> . LTE
-    THEN            reduce using rule 27 (relation -> expr relExpr expr .)
-    DO              reduce using rule 27 (relation -> expr relExpr expr .)
-    RPAREN          reduce using rule 27 (relation -> expr relExpr expr .)
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-    OR              shift and go to state 92
-    AND             shift and go to state 93
-    NEQ             shift and go to state 94
-    EQ              shift and go to state 95
-    GT              shift and go to state 96
-    GTE             shift and go to state 97
-    LT              shift and go to state 98
-    LTE             shift and go to state 99
-
-    relExpr                        shift and go to state 87
-
 state 126
 
-    (28) relation -> expr relExpr relation .
-    THEN            reduce using rule 28 (relation -> expr relExpr relation .)
-    DO              reduce using rule 28 (relation -> expr relExpr relation .)
-    RPAREN          reduce using rule 28 (relation -> expr relExpr relation .)
+    (28) relation -> relExpr OR relation .
+    THEN            reduce using rule 28 (relation -> relExpr OR relation .)
+    DO              reduce using rule 28 (relation -> relExpr OR relation .)
+    RPAREN          reduce using rule 28 (relation -> relExpr OR relation .)
 
 
 state 127
 
-    (46) expr -> LPAREN . expr RPAREN
-    (25) relation -> LPAREN . relation RPAREN
-    (39) expr -> . TFLOAT LPAREN expr RPAREN
-    (40) expr -> . TINT LPAREN expr RPAREN
-    (41) expr -> . number
-    (42) expr -> . ID LBRACKET expr RBRACKET
-    (43) expr -> . ID
-    (44) expr -> . ID LPAREN RPAREN
-    (45) expr -> . ID LPAREN exprList RPAREN
-    (46) expr -> . LPAREN expr RPAREN
-    (47) expr -> . PLUS expr
-    (48) expr -> . MINUS expr
-    (49) expr -> . expr DIVIDE expr
-    (50) expr -> . expr TIMES expr
-    (51) expr -> . expr MINUS expr
-    (52) expr -> . expr PLUS expr
-    (25) relation -> . LPAREN relation RPAREN
-    (26) relation -> . NOT relation
-    (27) relation -> . expr relExpr expr
-    (28) relation -> . expr relExpr relation
-    (65) number -> . FLOAT
-    (66) number -> . INT
-    TFLOAT          shift and go to state 55
-    TINT            shift and go to state 56
-    ID              shift and go to state 58
-    LPAREN          shift and go to state 127
-    PLUS            shift and go to state 59
-    MINUS           shift and go to state 60
-    NOT             shift and go to state 53
-    FLOAT           shift and go to state 61
-    INT             shift and go to state 62
+    (29) relation -> relExpr AND relation .
+    THEN            reduce using rule 29 (relation -> relExpr AND relation .)
+    DO              reduce using rule 29 (relation -> relExpr AND relation .)
+    RPAREN          reduce using rule 29 (relation -> relExpr AND relation .)
 
-    expr                           shift and go to state 145
-    relation                       shift and go to state 84
-    number                         shift and go to state 57
 
 state 128
+
+    (30) relExpr -> expr relCon expr .
+    (49) expr -> expr . DIVIDE expr
+    (50) expr -> expr . TIMES expr
+    (51) expr -> expr . MINUS expr
+    (52) expr -> expr . PLUS expr
+    OR              reduce using rule 30 (relExpr -> expr relCon expr .)
+    AND             reduce using rule 30 (relExpr -> expr relCon expr .)
+    THEN            reduce using rule 30 (relExpr -> expr relCon expr .)
+    DO              reduce using rule 30 (relExpr -> expr relCon expr .)
+    RPAREN          reduce using rule 30 (relExpr -> expr relCon expr .)
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
+
+
+state 129
 
     (49) expr -> expr DIVIDE expr .
     (49) expr -> expr . DIVIDE expr
@@ -2411,8 +2421,6 @@ state 128
     TIMES           reduce using rule 49 (expr -> expr DIVIDE expr .)
     MINUS           reduce using rule 49 (expr -> expr DIVIDE expr .)
     PLUS            reduce using rule 49 (expr -> expr DIVIDE expr .)
-    OR              reduce using rule 49 (expr -> expr DIVIDE expr .)
-    AND             reduce using rule 49 (expr -> expr DIVIDE expr .)
     NEQ             reduce using rule 49 (expr -> expr DIVIDE expr .)
     EQ              reduce using rule 49 (expr -> expr DIVIDE expr .)
     GT              reduce using rule 49 (expr -> expr DIVIDE expr .)
@@ -2425,11 +2433,13 @@ state 128
     RBRACKET        reduce using rule 49 (expr -> expr DIVIDE expr .)
     COMMA           reduce using rule 49 (expr -> expr DIVIDE expr .)
     RPAREN          reduce using rule 49 (expr -> expr DIVIDE expr .)
+    OR              reduce using rule 49 (expr -> expr DIVIDE expr .)
+    AND             reduce using rule 49 (expr -> expr DIVIDE expr .)
     THEN            reduce using rule 49 (expr -> expr DIVIDE expr .)
     DO              reduce using rule 49 (expr -> expr DIVIDE expr .)
 
 
-state 129
+state 130
 
     (50) expr -> expr TIMES expr .
     (49) expr -> expr . DIVIDE expr
@@ -2440,8 +2450,6 @@ state 129
     TIMES           reduce using rule 50 (expr -> expr TIMES expr .)
     MINUS           reduce using rule 50 (expr -> expr TIMES expr .)
     PLUS            reduce using rule 50 (expr -> expr TIMES expr .)
-    OR              reduce using rule 50 (expr -> expr TIMES expr .)
-    AND             reduce using rule 50 (expr -> expr TIMES expr .)
     NEQ             reduce using rule 50 (expr -> expr TIMES expr .)
     EQ              reduce using rule 50 (expr -> expr TIMES expr .)
     GT              reduce using rule 50 (expr -> expr TIMES expr .)
@@ -2454,11 +2462,13 @@ state 129
     RBRACKET        reduce using rule 50 (expr -> expr TIMES expr .)
     COMMA           reduce using rule 50 (expr -> expr TIMES expr .)
     RPAREN          reduce using rule 50 (expr -> expr TIMES expr .)
+    OR              reduce using rule 50 (expr -> expr TIMES expr .)
+    AND             reduce using rule 50 (expr -> expr TIMES expr .)
     THEN            reduce using rule 50 (expr -> expr TIMES expr .)
     DO              reduce using rule 50 (expr -> expr TIMES expr .)
 
 
-state 130
+state 131
 
     (51) expr -> expr MINUS expr .
     (49) expr -> expr . DIVIDE expr
@@ -2467,8 +2477,6 @@ state 130
     (52) expr -> expr . PLUS expr
     MINUS           reduce using rule 51 (expr -> expr MINUS expr .)
     PLUS            reduce using rule 51 (expr -> expr MINUS expr .)
-    OR              reduce using rule 51 (expr -> expr MINUS expr .)
-    AND             reduce using rule 51 (expr -> expr MINUS expr .)
     NEQ             reduce using rule 51 (expr -> expr MINUS expr .)
     EQ              reduce using rule 51 (expr -> expr MINUS expr .)
     GT              reduce using rule 51 (expr -> expr MINUS expr .)
@@ -2481,13 +2489,15 @@ state 130
     RBRACKET        reduce using rule 51 (expr -> expr MINUS expr .)
     COMMA           reduce using rule 51 (expr -> expr MINUS expr .)
     RPAREN          reduce using rule 51 (expr -> expr MINUS expr .)
+    OR              reduce using rule 51 (expr -> expr MINUS expr .)
+    AND             reduce using rule 51 (expr -> expr MINUS expr .)
     THEN            reduce using rule 51 (expr -> expr MINUS expr .)
     DO              reduce using rule 51 (expr -> expr MINUS expr .)
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
 
 
-state 131
+state 132
 
     (52) expr -> expr PLUS expr .
     (49) expr -> expr . DIVIDE expr
@@ -2496,8 +2506,6 @@ state 131
     (52) expr -> expr . PLUS expr
     MINUS           reduce using rule 52 (expr -> expr PLUS expr .)
     PLUS            reduce using rule 52 (expr -> expr PLUS expr .)
-    OR              reduce using rule 52 (expr -> expr PLUS expr .)
-    AND             reduce using rule 52 (expr -> expr PLUS expr .)
     NEQ             reduce using rule 52 (expr -> expr PLUS expr .)
     EQ              reduce using rule 52 (expr -> expr PLUS expr .)
     GT              reduce using rule 52 (expr -> expr PLUS expr .)
@@ -2510,13 +2518,15 @@ state 131
     RBRACKET        reduce using rule 52 (expr -> expr PLUS expr .)
     COMMA           reduce using rule 52 (expr -> expr PLUS expr .)
     RPAREN          reduce using rule 52 (expr -> expr PLUS expr .)
+    OR              reduce using rule 52 (expr -> expr PLUS expr .)
+    AND             reduce using rule 52 (expr -> expr PLUS expr .)
     THEN            reduce using rule 52 (expr -> expr PLUS expr .)
     DO              reduce using rule 52 (expr -> expr PLUS expr .)
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
 
 
-state 132
+state 133
 
     (39) expr -> TFLOAT LPAREN expr . RPAREN
     (49) expr -> expr . DIVIDE expr
@@ -2524,13 +2534,13 @@ state 132
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
     RPAREN          shift and go to state 146
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 133
+state 134
 
     (40) expr -> TINT LPAREN expr . RPAREN
     (49) expr -> expr . DIVIDE expr
@@ -2538,13 +2548,13 @@ state 133
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
     RPAREN          shift and go to state 147
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 134
+state 135
 
     (42) expr -> ID LBRACKET expr . RBRACKET
     (49) expr -> expr . DIVIDE expr
@@ -2552,21 +2562,19 @@ state 134
     (51) expr -> expr . MINUS expr
     (52) expr -> expr . PLUS expr
     RBRACKET        shift and go to state 148
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
+    DIVIDE          shift and go to state 91
+    TIMES           shift and go to state 92
+    MINUS           shift and go to state 93
+    PLUS            shift and go to state 94
 
 
-state 135
+state 136
 
     (44) expr -> ID LPAREN RPAREN .
     DIVIDE          reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     TIMES           reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     MINUS           reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     PLUS            reduce using rule 44 (expr -> ID LPAREN RPAREN .)
-    OR              reduce using rule 44 (expr -> ID LPAREN RPAREN .)
-    AND             reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     NEQ             reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     EQ              reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     GT              reduce using rule 44 (expr -> ID LPAREN RPAREN .)
@@ -2579,17 +2587,19 @@ state 135
     RBRACKET        reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     COMMA           reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     RPAREN          reduce using rule 44 (expr -> ID LPAREN RPAREN .)
+    OR              reduce using rule 44 (expr -> ID LPAREN RPAREN .)
+    AND             reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     THEN            reduce using rule 44 (expr -> ID LPAREN RPAREN .)
     DO              reduce using rule 44 (expr -> ID LPAREN RPAREN .)
 
 
-state 136
+state 137
 
     (45) expr -> ID LPAREN exprList . RPAREN
     RPAREN          shift and go to state 149
 
 
-state 137
+state 138
 
     (18) statement -> READ LPAREN location RPAREN .
     SEMICOLON       reduce using rule 18 (statement -> READ LPAREN location RPAREN .)
@@ -2597,7 +2607,7 @@ state 137
     ELSE            reduce using rule 18 (statement -> READ LPAREN location RPAREN .)
 
 
-state 138
+state 139
 
     (19) statement -> WRITE LPAREN expr RPAREN .
     SEMICOLON       reduce using rule 19 (statement -> WRITE LPAREN expr RPAREN .)
@@ -2605,7 +2615,7 @@ state 138
     ELSE            reduce using rule 19 (statement -> WRITE LPAREN expr RPAREN .)
 
 
-state 139
+state 140
 
     (20) statement -> PRINT LPAREN STRING RPAREN .
     SEMICOLON       reduce using rule 20 (statement -> PRINT LPAREN STRING RPAREN .)
@@ -2613,7 +2623,7 @@ state 139
     ELSE            reduce using rule 20 (statement -> PRINT LPAREN STRING RPAREN .)
 
 
-state 140
+state 141
 
     (23) statement -> WHILE relation DO statement .
     SEMICOLON       reduce using rule 23 (statement -> WHILE relation DO statement .)
@@ -2621,27 +2631,27 @@ state 140
     ELSE            reduce using rule 23 (statement -> WHILE relation DO statement .)
 
 
-state 141
-
-    (7) func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList END .
-    FUN             reduce using rule 7 (func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList END .)
-    $end            reduce using rule 7 (func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList END .)
-    SEMICOLON       reduce using rule 7 (func -> FUN ID LPAREN argList RPAREN varList BEGIN statementList END .)
-
-
 state 142
+
+    (7) func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList END .
+    FUN             reduce using rule 7 (func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList END .)
+    $end            reduce using rule 7 (func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList END .)
+    SEMICOLON       reduce using rule 7 (func -> FUN ID LPAREN paramList RPAREN varList BEGIN statementList END .)
+
+
+state 143
 
     (38) exprList -> expr COMMA exprList .
     RPAREN          reduce using rule 38 (exprList -> expr COMMA exprList .)
 
 
-state 143
+state 144
 
     (22) statement -> IF relation . THEN statement ELSE statement
     THEN            shift and go to state 150
 
 
-state 144
+state 145
 
     (22) statement -> IF relation THEN statement ELSE . statement
     (12) statement -> . BEGIN statementList END
@@ -2666,44 +2676,11 @@ state 144
     READ            shift and go to state 33
     WRITE           shift and go to state 35
     PRINT           shift and go to state 36
-    IF              shift and go to state 121
+    IF              shift and go to state 122
     WHILE           shift and go to state 37
 
     statement                      shift and go to state 151
     location                       shift and go to state 34
-
-state 145
-
-    (46) expr -> LPAREN expr . RPAREN
-    (49) expr -> expr . DIVIDE expr
-    (50) expr -> expr . TIMES expr
-    (51) expr -> expr . MINUS expr
-    (52) expr -> expr . PLUS expr
-    (27) relation -> expr . relExpr expr
-    (28) relation -> expr . relExpr relation
-    (29) relExpr -> . OR
-    (30) relExpr -> . AND
-    (31) relExpr -> . NEQ
-    (32) relExpr -> . EQ
-    (33) relExpr -> . GT
-    (34) relExpr -> . GTE
-    (35) relExpr -> . LT
-    (36) relExpr -> . LTE
-    RPAREN          shift and go to state 124
-    DIVIDE          shift and go to state 88
-    TIMES           shift and go to state 89
-    MINUS           shift and go to state 90
-    PLUS            shift and go to state 91
-    OR              shift and go to state 92
-    AND             shift and go to state 93
-    NEQ             shift and go to state 94
-    EQ              shift and go to state 95
-    GT              shift and go to state 96
-    GTE             shift and go to state 97
-    LT              shift and go to state 98
-    LTE             shift and go to state 99
-
-    relExpr                        shift and go to state 87
 
 state 146
 
@@ -2712,8 +2689,6 @@ state 146
     TIMES           reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     MINUS           reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     PLUS            reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
-    OR              reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
-    AND             reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     NEQ             reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     EQ              reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     GT              reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
@@ -2726,6 +2701,8 @@ state 146
     RBRACKET        reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     COMMA           reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     RPAREN          reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
+    OR              reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
+    AND             reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     THEN            reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
     DO              reduce using rule 39 (expr -> TFLOAT LPAREN expr RPAREN .)
 
@@ -2737,8 +2714,6 @@ state 147
     TIMES           reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     MINUS           reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     PLUS            reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
-    OR              reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
-    AND             reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     NEQ             reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     EQ              reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     GT              reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
@@ -2751,6 +2726,8 @@ state 147
     RBRACKET        reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     COMMA           reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     RPAREN          reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
+    OR              reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
+    AND             reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     THEN            reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
     DO              reduce using rule 40 (expr -> TINT LPAREN expr RPAREN .)
 
@@ -2762,8 +2739,6 @@ state 148
     TIMES           reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     MINUS           reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     PLUS            reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
-    OR              reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
-    AND             reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     NEQ             reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     EQ              reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     GT              reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
@@ -2776,6 +2751,8 @@ state 148
     RBRACKET        reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     COMMA           reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     RPAREN          reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
+    OR              reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
+    AND             reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     THEN            reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
     DO              reduce using rule 42 (expr -> ID LBRACKET expr RBRACKET .)
 
@@ -2787,8 +2764,6 @@ state 149
     TIMES           reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     MINUS           reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     PLUS            reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
-    OR              reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
-    AND             reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     NEQ             reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     EQ              reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     GT              reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
@@ -2801,6 +2776,8 @@ state 149
     RBRACKET        reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     COMMA           reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     RPAREN          reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
+    OR              reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
+    AND             reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     THEN            reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
     DO              reduce using rule 45 (expr -> ID LPAREN exprList RPAREN .)
 
@@ -2830,7 +2807,7 @@ state 150
     READ            shift and go to state 33
     WRITE           shift and go to state 35
     PRINT           shift and go to state 36
-    IF              shift and go to state 121
+    IF              shift and go to state 122
     WHILE           shift and go to state 37
 
     statement                      shift and go to state 152
@@ -2847,4 +2824,4 @@ state 151
 state 152
 
     (22) statement -> IF relation THEN statement . ELSE statement
-    ELSE            shift and go to state 144
+    ELSE            shift and go to state 145
